@@ -1,0 +1,255 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.20.1
+  name: modelservices.podserve.dev
+spec:
+  group: podserve.dev
+  names:
+    categories:
+    - podserve
+    kind: ModelService
+    listKind: ModelServiceList
+    plural: modelservices
+    shortNames:
+    - msvc
+    singular: modelservice
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.model.source
+      name: Model
+      type: string
+    - jsonPath: .status.phase
+      name: Phase
+      type: string
+    - jsonPath: .status.profile.gpuType
+      name: GPU
+      type: string
+    - jsonPath: .status.profile.gpuCount
+      name: GPUs
+      type: integer
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: ModelService asks podserve to serve one Hugging Face model behind
+          an OpenAI-compatible API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ModelServiceSpec is what the user asks for. Everything except
+              model.source has a default.
+            properties:
+              accelerator:
+                description: Accelerator constrains the GPU choice. Omitted fields
+                  are chosen by the settings engine.
+                properties:
+                  count:
+                    default: 0
+                    description: Count is the number of GPUs per replica; 0 lets podserve
+                      choose.
+                    enum:
+                    - 0
+                    - 1
+                    - 2
+                    - 4
+                    - 8
+                    format: int32
+                    type: integer
+                  spot:
+                    default: true
+                    description: Spot asks for spot capacity. Defaults to true.
+                    type: boolean
+                  type:
+                    default: auto
+                    description: Type is a GPU type from catalog/gpus.yaml, or "auto"
+                      to let podserve choose.
+                    enum:
+                    - auto
+                    - nvidia-l4
+                    - nvidia-tesla-a100
+                    - nvidia-a100-80gb
+                    - nvidia-h100-80gb
+                    type: string
+                type: object
+              engine:
+                description: Engine tunes the vLLM engine. Omitted fields are chosen
+                  by the settings engine.
+                properties:
+                  extraArgs:
+                    description: |-
+                      ExtraArgs are passed to `vllm serve` after podserve's own arguments. Arguments podserve sets
+                      itself (model, served name, tensor parallelism, context length, memory, dtype, load format,
+                      port) are rejected; see docs/design/modelservice.md.
+                    items:
+                      type: string
+                    maxItems: 32
+                    type: array
+                  gpuMemoryPercent:
+                    default: 90
+                    description: |-
+                      GPUMemoryPercent is the share of each GPU's memory vLLM may use (vLLM's
+                      --gpu-memory-utilization, as a whole percent). An integer, because CRD schemas avoid floats.
+                    format: int32
+                    maximum: 98
+                    minimum: 50
+                    type: integer
+                  maxModelLen:
+                    description: MaxModelLen caps the context length in tokens; 0
+                      lets podserve choose from the KV-cache room.
+                    format: int32
+                    maximum: 1048576
+                    minimum: 0
+                    type: integer
+                type: object
+              model:
+                description: Model is the Hugging Face model to serve.
+                properties:
+                  revision:
+                    default: main
+                    description: |-
+                      Revision is a branch, tag or commit SHA. podserve resolves it to a commit SHA at deploy time
+                      and records that in status.resolvedRevision.
+                    maxLength: 128
+                    pattern: ^[A-Za-z0-9][A-Za-z0-9._/-]*$
+                    type: string
+                  source:
+                    description: Source is the model URI. v0.1 accepts hf://ORG/MODEL
+                      only.
+                    maxLength: 200
+                    pattern: ^hf://[A-Za-z0-9][A-Za-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._-]*$
+                    type: string
+                required:
+                - source
+                type: object
+              replicas:
+                default: 1
+                description: Replicas is the fixed number of serving pods. v0.1 has
+                  no autoscaling.
+                format: int32
+                maximum: 8
+                minimum: 1
+                type: integer
+              servedModelName:
+                description: |-
+                  ServedModelName is the name clients send as `model` and the `model_name` metric label.
+                  Defaults to the HF repo id, e.g. "Qwen/Qwen3-8B" (D-017).
+                maxLength: 128
+                pattern: ^[A-Za-z0-9][A-Za-z0-9._/-]*$
+                type: string
+            required:
+            - model
+            type: object
+          status:
+            description: |-
+              ModelServiceStatus is written by podserve (the CLI in v0.1, the operator from v0.2), always
+              through the /status subresource.
+            properties:
+              endpoint:
+                description: Endpoint is the cluster-internal OpenAI base URL, e.g.
+                  http://NAME.podserve.svc:8000/v1.
+                type: string
+              message:
+                description: Message is a human-readable note on the current phase,
+                  e.g. why it failed.
+                type: string
+              observedGeneration:
+                description: ObservedGeneration is the metadata.generation this status
+                  describes.
+                format: int64
+                type: integer
+              phase:
+                description: Phase is the lifecycle phase.
+                enum:
+                - Pending
+                - Caching
+                - Deploying
+                - Ready
+                - Failed
+                type: string
+              profile:
+                description: Profile is the serving profile the settings engine chose.
+                properties:
+                  dtype:
+                    type: string
+                  gpuCount:
+                    format: int32
+                    type: integer
+                  gpuMemoryPercent:
+                    format: int32
+                    type: integer
+                  gpuType:
+                    type: string
+                  kvBytesPerToken:
+                    description: KVBytesPerToken is the KV-cache cost of one token
+                      across all GPUs.
+                    format: int64
+                    type: integer
+                  kvCacheBytes:
+                    description: KVCacheBytes is the estimated KV-cache room across
+                      all GPUs.
+                    format: int64
+                    type: integer
+                  machineType:
+                    type: string
+                  maxModelLen:
+                    format: int32
+                    type: integer
+                  tensorParallelSize:
+                    format: int32
+                    type: integer
+                  tokenCapacity:
+                    description: TokenCapacity is how many tokens of KV cache fit.
+                    format: int64
+                    type: integer
+                  weightsBytes:
+                    description: WeightsBytes is the estimated weight memory across
+                      all GPUs.
+                    format: int64
+                    type: integer
+                required:
+                - dtype
+                - gpuCount
+                - gpuMemoryPercent
+                - gpuType
+                - kvBytesPerToken
+                - kvCacheBytes
+                - machineType
+                - maxModelLen
+                - tensorParallelSize
+                - tokenCapacity
+                - weightsBytes
+                type: object
+              resolvedRevision:
+                description: ResolvedRevision is the commit SHA spec.model.revision
+                  resolved to.
+                type: string
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

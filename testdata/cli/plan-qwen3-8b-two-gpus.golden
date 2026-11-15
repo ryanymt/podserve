@@ -1,0 +1,12 @@
+args: ["plan", "hf://Qwen/Qwen3-8B", "--gpu", "nvidia-l4", "--gpus", "2"]
+exit: 0
+--- stdout
+Model:        Qwen/Qwen3-8B @ b968826d9c46 (text-generation, apache-2.0)
+Architecture: Qwen3ForCausalLM (supported by vLLM v0.32.0)
+Weights:      15.3 GiB, served as bfloat16
+GPU:          2x nvidia-l4 on g2-standard-24 (20 CPU, 80Gi)
+Parallelism:  tensor-parallel 2
+Context:      40960 tokens (model maximum 40960)
+KV cache:     20.2 GiB, 147323 tokens, 3 sequence(s) at full context
+Deployable:   yes
+--- stderr

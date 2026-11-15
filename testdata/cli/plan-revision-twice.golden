@@ -1,0 +1,5 @@
+args: ["plan", "hf://Qwen/Qwen3-8B@main", "--revision", "main"]
+exit: 2
+--- stdout
+--- stderr
+podserve: give the revision either as @REVISION or with --revision, not both

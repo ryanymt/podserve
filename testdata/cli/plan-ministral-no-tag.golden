@@ -1,0 +1,13 @@
+args: ["plan", "hf://mistralai/Ministral-8B-Instruct-2410"]
+exit: 0
+--- stdout
+Model:        mistralai/Ministral-8B-Instruct-2410 @ 2f494a194c5b (no pipeline tag, other)
+Architecture: MistralForCausalLM (supported by vLLM v0.32.0)
+Weights:      14.9 GiB, served as bfloat16
+GPU:          1x nvidia-l4 on g2-standard-8 (6 CPU, 24Gi)
+Parallelism:  tensor-parallel 1
+Context:      19456 tokens (model maximum 32768)
+KV cache:     2.8 GiB, 20433 tokens, 1 sequence(s) at full context
+Deployable:   yes
+warning: model has no pipeline_tag; treating it as text-generation because its architecture is MistralForCausalLM
+--- stderr

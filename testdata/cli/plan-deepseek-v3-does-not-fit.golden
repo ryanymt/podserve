@@ -1,0 +1,5 @@
+args: ["plan", "hf://deepseek-ai/DeepSeek-V3"]
+exit: 3
+--- stdout
+--- stderr
+podserve: cannot serve deepseek-ai/DeepSeek-V3: needs about 641.3 GiB for weights; the largest option tried (8x nvidia-h100-80gb) has room for 550.1 GiB (DOES_NOT_FIT)

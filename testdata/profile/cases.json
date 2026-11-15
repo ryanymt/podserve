@@ -1,0 +1,31 @@
+{
+ "_comment": "Settings-engine cases (P01 T2). profile_test.go and expected.py both read this file; expected.py writes expected.json. request fields: gpuType, gpuCount, maxModelLen, gpuMemoryPercent, hasToken (omitted = zero).",
+ "cases": [
+  {"name": "qwen3-8b-auto",               "repo": "Qwen/Qwen3-8B",                      "request": {}},
+  {"name": "qwen3-14b-auto",              "repo": "Qwen/Qwen3-14B",                     "request": {}},
+  {"name": "qwen3-32b-auto",              "repo": "Qwen/Qwen3-32B",                     "request": {}},
+  {"name": "qwen3-30b-a3b-moe",           "repo": "Qwen/Qwen3-30B-A3B",                 "request": {}},
+  {"name": "deepseek-v2-lite-mla",        "repo": "deepseek-ai/DeepSeek-V2-Lite-Chat",  "request": {}},
+  {"name": "llama-160m-fp32",             "repo": "JackFram/llama-160m",                "request": {}},
+  {"name": "qwen3-8b-fp8-prequantised",   "repo": "Qwen/Qwen3-8B-FP8",                  "request": {}},
+  {"name": "llama-3.1-gated-no-token",    "repo": "meta-llama/Llama-3.1-8B-Instruct",   "request": {}},
+  {"name": "llama-3.1-gated-token-no-config", "repo": "meta-llama/Llama-3.1-8B-Instruct", "request": {"hasToken": true}},
+  {"name": "opt-125m-bin-only",           "repo": "facebook/opt-125m",                  "request": {}},
+  {"name": "rwkv-unsupported",            "repo": "RWKV/rwkv-4-169m-pile",              "request": {}},
+  {"name": "olmo2-transformers-backend",  "repo": "allenai/OLMo-2-0425-1B",             "request": {}},
+  {"name": "qwen2.5-vl-vision",           "repo": "Qwen/Qwen2.5-VL-7B-Instruct",        "request": {}},
+  {"name": "qwen3-embedding",             "repo": "Qwen/Qwen3-Embedding-0.6B",          "request": {}},
+  {"name": "ministral-duplicate-weights", "repo": "mistralai/Ministral-8B-Instruct-2410", "request": {}},
+  {"name": "qwen3-235b-not-deployable",   "repo": "Qwen/Qwen3-235B-A22B",               "request": {}},
+  {"name": "deepseek-v3-does-not-fit",    "repo": "deepseek-ai/DeepSeek-V3",            "request": {}},
+  {"name": "gpt2-legacy-keys",            "repo": "openai-community/gpt2",              "request": {}},
+  {"name": "qwen3-8b-two-gpus",           "repo": "Qwen/Qwen3-8B",                      "request": {"gpuCount": 2, "gpuType": "nvidia-l4"}},
+  {"name": "qwen3-8b-context-8k",         "repo": "Qwen/Qwen3-8B",                      "request": {"maxModelLen": 8192}},
+  {"name": "qwen3-8b-context-too-long",   "repo": "Qwen/Qwen3-8B",                      "request": {"maxModelLen": 50000}},
+  {"name": "qwen3-8b-on-h100",            "repo": "Qwen/Qwen3-8B",                      "request": {"gpuType": "nvidia-h100-80gb"}},
+  {"name": "qwen3-8b-unknown-gpu",        "repo": "Qwen/Qwen3-8B",                      "request": {"gpuType": "tpu-v5e"}},
+  {"name": "qwen3-8b-memory-70",          "repo": "Qwen/Qwen3-8B",                      "request": {"gpuMemoryPercent": 70}},
+  {"name": "qwen3-14b-one-l4",            "repo": "Qwen/Qwen3-14B",                     "request": {"gpuType": "nvidia-l4", "gpuCount": 1}},
+  {"name": "qwen3-32b-on-a100-40",        "repo": "Qwen/Qwen3-32B",                     "request": {"gpuType": "nvidia-tesla-a100"}}
+ ]
+}

@@ -1,0 +1,43 @@
+{
+ "cardData": {
+  "license": null
+ },
+ "gated": false,
+ "id": "RWKV/rwkv-4-169m-pile",
+ "pipeline_tag": "text-generation",
+ "sha": "46bdc280eb97b6141d5d51a935e0c4870ecaefcc",
+ "siblings": [
+  {
+   "rfilename": ".gitattributes",
+   "size": 1477
+  },
+  {
+   "rfilename": "README.md",
+   "size": 5303
+  },
+  {
+   "rfilename": "config.json",
+   "size": 521
+  },
+  {
+   "rfilename": "generation_config.json",
+   "size": 116
+  },
+  {
+   "rfilename": "pytorch_model.bin",
+   "size": 677440778
+  },
+  {
+   "rfilename": "special_tokens_map.json",
+   "size": 99
+  },
+  {
+   "rfilename": "tokenizer.json",
+   "size": 2113738
+  },
+  {
+   "rfilename": "tokenizer_config.json",
+   "size": 264
+  }
+ ]
+}

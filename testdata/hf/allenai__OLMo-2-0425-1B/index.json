@@ -1,0 +1,6 @@
+{
+ "weight_map": {
+  "lm_head.weight": "model-00002-of-00002.safetensors",
+  "model.embed_tokens.weight": "model-00001-of-00002.safetensors"
+ }
+}

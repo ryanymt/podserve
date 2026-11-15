@@ -1,0 +1,12 @@
+args: ["plan", "hf://Qwen/Qwen3-235B-A22B"]
+exit: 0
+--- stdout
+Model:        Qwen/Qwen3-235B-A22B @ 8efa61729e24 (text-generation, apache-2.0)
+Architecture: Qwen3MoeForCausalLM (supported by vLLM v0.32.0)
+Weights:      437.9 GiB, served as bfloat16
+GPU:          8x nvidia-a100-80gb on a2-ultragpu-8g (90 CPU, 1200Gi)
+Parallelism:  tensor-parallel 8
+Context:      40960 tokens (model maximum 40960)
+KV cache:     112.0 GiB, 312292 tokens, 7 sequence(s) at full context
+Deployable:   no (podserve v0.1 deploys nvidia-l4 only)
+--- stderr

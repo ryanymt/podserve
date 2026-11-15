@@ -1,0 +1,17 @@
+args: ["plan", "hf://Qwen/Qwen3-Embedding-0.6B", "-o", "json"]
+exit: 3
+--- stdout
+{
+  "model": {
+    "repo": "Qwen/Qwen3-Embedding-0.6B",
+    "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+    "pipelineTag": "feature-extraction",
+    "license": "apache-2.0",
+    "gated": false
+  },
+  "refusal": {
+    "code": "NOT_TEXT_GENERATION",
+    "message": "its Hub pipeline tag is feature-extraction; podserve v0.1 serves text-generation models only"
+  }
+}
+--- stderr

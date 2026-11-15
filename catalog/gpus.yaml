@@ -1,0 +1,46 @@
+# GPU catalogue. Spine file (P01 T1); the settings engine reads it (docs/design/profile.md).
+#
+# Order is preference: with spec.accelerator.type "auto", deployable types are tried top to bottom.
+# - type:       the GKE accelerator name (node label cloud.google.com/gke-accelerator).
+# - deployable: v0.1 deploys only L4. The others exist so `podserve plan` can say what a model needs.
+# - usableMiB:  the per-GPU total memory as nvidia-smi reports it (what vLLM's
+#               --gpu-memory-utilization is a fraction of). L4's 23034 MiB was read live in T0 (driver
+#               580.178.04); the others are published nvidia-smi totals, re-checked when a phase first
+#               deploys them.
+# - shapes:     for each GPU count, the GKE machine type and the CPU and memory podserve requests.
+#               On Autopilot the machine follows from the GPU count plus these requests, so they
+#               must fit that machine's allocatable resources. Memory covers vLLM's CPU-side use,
+#               the /dev/shm volume and the Run:ai streamer's buffer.
+gpus:
+  - type: nvidia-l4
+    deployable: true
+    usableMiB: 23034
+    shapes:
+      - {gpus: 1, machineType: g2-standard-8, cpu: "6", memory: 24Gi}
+      - {gpus: 2, machineType: g2-standard-24, cpu: "20", memory: 80Gi}
+      - {gpus: 4, machineType: g2-standard-48, cpu: "44", memory: 176Gi}
+      - {gpus: 8, machineType: g2-standard-96, cpu: "90", memory: 352Gi}
+  - type: nvidia-tesla-a100
+    deployable: false
+    usableMiB: 40326
+    shapes:
+      - {gpus: 1, machineType: a2-highgpu-1g, cpu: "10", memory: 76Gi}
+      - {gpus: 2, machineType: a2-highgpu-2g, cpu: "22", memory: 150Gi}
+      - {gpus: 4, machineType: a2-highgpu-4g, cpu: "44", memory: 300Gi}
+      - {gpus: 8, machineType: a2-highgpu-8g, cpu: "90", memory: 600Gi}
+  - type: nvidia-a100-80gb
+    deployable: false
+    usableMiB: 81051
+    shapes:
+      - {gpus: 1, machineType: a2-ultragpu-1g, cpu: "10", memory: 150Gi}
+      - {gpus: 2, machineType: a2-ultragpu-2g, cpu: "22", memory: 300Gi}
+      - {gpus: 4, machineType: a2-ultragpu-4g, cpu: "44", memory: 600Gi}
+      - {gpus: 8, machineType: a2-ultragpu-8g, cpu: "90", memory: 1200Gi}
+  - type: nvidia-h100-80gb
+    deployable: false
+    usableMiB: 81079
+    shapes:
+      - {gpus: 1, machineType: a3-highgpu-1g, cpu: "24", memory: 200Gi}
+      - {gpus: 2, machineType: a3-highgpu-2g, cpu: "48", memory: 400Gi}
+      - {gpus: 4, machineType: a3-highgpu-4g, cpu: "96", memory: 800Gi}
+      - {gpus: 8, machineType: a3-highgpu-8g, cpu: "200", memory: 1600Gi}

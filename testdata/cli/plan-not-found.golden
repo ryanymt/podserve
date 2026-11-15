@@ -1,0 +1,5 @@
+args: ["plan", "hf://nobody/nothing"]
+exit: 4
+--- stdout
+--- stderr
+podserve: nobody/nothing@main not found on the Hugging Face Hub

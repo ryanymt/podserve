@@ -1,0 +1,46 @@
+# A short load test for a deployed model (P01 AC6): vLLM's own benchmark client, run as a Job on a CPU
+# node in the podserve namespace, against the model's in-cluster Service. It fills the model-service
+# dashboard and prints a latency/throughput summary (TTFT, inter-token latency, tokens/s).
+#
+#   kubectl apply -f deploy/examples/loadtest-job.yaml
+#   kubectl -n podserve logs -f job/loadtest-qwen3-8b
+#   kubectl -n podserve delete job loadtest-qwen3-8b
+#
+# For another model, change the Service host in --base-url, --model (the served model name) and
+# --tokenizer (the Hugging Face repo id). The tokenizer is downloaded from Hugging Face, which works
+# because the cluster's nodes reach the internet through Cloud NAT.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: loadtest-qwen3-8b
+  namespace: podserve
+  labels:
+    app.kubernetes.io/managed-by: podserve
+    app.kubernetes.io/component: loadtest
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: bench
+        # the same vLLM image the model runs (it carries the benchmark client), through the mirror;
+        # replace my-gcp-project with your project ID (podserve's vllmImage in podserve/podserve-platform)
+        image: us-central1-docker.pkg.dev/my-gcp-project/podserve-dockerhub/vllm/vllm-openai@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34
+        command: ["vllm", "bench", "serve"]
+        args:
+        - --backend=openai-chat
+        - --base-url=http://qwen3-8b.podserve.svc:8000
+        - --endpoint=/v1/chat/completions
+        - --model=Qwen/Qwen3-8B
+        - --tokenizer=Qwen/Qwen3-8B
+        - --dataset-name=random
+        - --random-input-len=512
+        - --random-output-len=128
+        - --num-prompts=200
+        - --max-concurrency=8
+        - --percentile-metrics=ttft,tpot,itl,e2el
+        - --metric-percentiles=50,95,99
+        resources:
+          requests: {cpu: "2", memory: 8Gi}

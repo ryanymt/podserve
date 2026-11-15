@@ -1,0 +1,5 @@
+args: ["plan", "s3://bucket/model"]
+exit: 2
+--- stdout
+--- stderr
+podserve: model source s3://bucket/model: want hf://ORG/MODEL

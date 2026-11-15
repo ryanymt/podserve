@@ -1,0 +1,184 @@
+# Render golden (P01 T2): Qwen3-8B, auto profile (1x L4, spot), defaults everywhere.
+# Documents, in order: Record, FetchJob, Deployment, Service, PodMonitoring. Compared as parsed
+# objects with null/empty values pruned (render_test.go). Pod settings are the ones T0 proved live.
+apiVersion: podserve.dev/v1alpha1
+kind: ModelService
+metadata:
+  name: qwen3-8b
+  namespace: podserve
+  labels:
+    app.kubernetes.io/managed-by: podserve
+spec:
+  model:
+    source: hf://Qwen/Qwen3-8B
+    revision: main
+  servedModelName: Qwen/Qwen3-8B
+  accelerator:
+    type: auto
+    spot: true
+  engine:
+    gpuMemoryPercent: 90
+  replicas: 1
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: podserve-fetch-93b36b699f72
+  namespace: podserve
+  labels:
+    app.kubernetes.io/managed-by: podserve
+    app.kubernetes.io/component: fetch
+    podserve.dev/fetch: 93b36b699f72
+    podserve.dev/revision: b968826d9c46dd6066d109eabc6255188de91218
+  annotations:
+    podserve.dev/repo: Qwen/Qwen3-8B
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: podserve
+        app.kubernetes.io/component: fetch
+        podserve.dev/fetch: 93b36b699f72
+    spec:
+      serviceAccountName: podserve-fetch
+      restartPolicy: Never
+      containers:
+      - name: fetch
+        image: us-central1-docker.pkg.dev/my-project/podserve/fetch@sha256:0000000000000000000000000000000000000000000000000000000000000001
+        command: ["python", "-I", "/app/fetch.py"]
+        env:
+        - {name: PODSERVE_REPO, value: Qwen/Qwen3-8B}
+        - {name: PODSERVE_REVISION, value: b968826d9c46dd6066d109eabc6255188de91218}
+        - {name: PODSERVE_DEST, value: gs://my-project-podserve-models/models/hf/Qwen/Qwen3-8B/b968826d9c46dd6066d109eabc6255188de91218}
+        - {name: PODSERVE_HF_TOKEN_SECRET, value: projects/my-project/secrets/podserve-hf-token}
+        - {name: PODSERVE_SCRATCH, value: /scratch}
+        - {name: HF_HUB_DISABLE_PROGRESS_BARS, value: "1"}
+        resources:
+          requests: {cpu: "2", memory: 8Gi}
+        volumeMounts:
+        - {name: scratch, mountPath: /scratch}
+      volumes:
+      - name: scratch
+        ephemeral:
+          volumeClaimTemplate:
+            spec:
+              accessModes: [ReadWriteOnce]
+              storageClassName: standard-rwo
+              resources:
+                requests: {storage: 10Gi}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qwen3-8b
+  namespace: podserve
+  labels: &labels
+    app.kubernetes.io/managed-by: podserve
+    app.kubernetes.io/component: server
+    podserve.dev/model: qwen3-8b
+    podserve.dev/revision: b968826d9c46dd6066d109eabc6255188de91218
+  ownerReferences:
+  - apiVersion: podserve.dev/v1alpha1
+    kind: ModelService
+    name: qwen3-8b
+    uid: 11111111-2222-3333-4444-555555555555
+    controller: true
+    blockOwnerDeletion: true
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      podserve.dev/model: qwen3-8b
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      serviceAccountName: podserve-model
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 25
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-l4
+        cloud.google.com/gke-gpu-driver-version: latest
+        cloud.google.com/gke-spot: "true"
+      containers:
+      - name: vllm
+        image: us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34
+        args:
+        - gs://my-project-podserve-models/models/hf/Qwen/Qwen3-8B/b968826d9c46dd6066d109eabc6255188de91218/
+        - --load-format=runai_streamer
+        - '--model-loader-extra-config={"memory_limit":4294967296}'
+        - --served-model-name=Qwen/Qwen3-8B
+        - --tensor-parallel-size=1
+        - --max-model-len=17408
+        - --gpu-memory-utilization=0.90
+        - --dtype=bfloat16
+        - --port=8000
+        env:
+        - {name: HF_HUB_OFFLINE, value: "1"}
+        ports:
+        - {name: http, containerPort: 8000}
+        resources:
+          requests: {cpu: "6", memory: 24Gi, ephemeral-storage: 10Gi}
+          limits: {nvidia.com/gpu: "1"}
+        startupProbe:
+          httpGet: {path: /health, port: http}
+          periodSeconds: 10
+          failureThreshold: 180
+        readinessProbe:
+          httpGet: {path: /health, port: http}
+          periodSeconds: 10
+        volumeMounts:
+        - {name: shm, mountPath: /dev/shm}
+      volumes:
+      - name: shm
+        emptyDir: {medium: Memory, sizeLimit: 8Gi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qwen3-8b
+  namespace: podserve
+  labels:
+    app.kubernetes.io/managed-by: podserve
+    app.kubernetes.io/component: server
+    podserve.dev/model: qwen3-8b
+  ownerReferences:
+  - apiVersion: podserve.dev/v1alpha1
+    kind: ModelService
+    name: qwen3-8b
+    uid: 11111111-2222-3333-4444-555555555555
+    controller: true
+    blockOwnerDeletion: true
+spec:
+  type: ClusterIP
+  selector:
+    podserve.dev/model: qwen3-8b
+  ports:
+  - {name: http, port: 8000, targetPort: http}
+---
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  name: qwen3-8b
+  namespace: podserve
+  labels:
+    app.kubernetes.io/managed-by: podserve
+    app.kubernetes.io/component: server
+    podserve.dev/model: qwen3-8b
+  ownerReferences:
+  - apiVersion: podserve.dev/v1alpha1
+    kind: ModelService
+    name: qwen3-8b
+    uid: 11111111-2222-3333-4444-555555555555
+    controller: true
+    blockOwnerDeletion: true
+spec:
+  selector:
+    matchLabels:
+      podserve.dev/model: qwen3-8b
+  endpoints:
+  - {port: http, path: /metrics, interval: 15s}

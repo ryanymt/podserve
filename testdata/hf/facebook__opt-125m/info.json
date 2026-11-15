@@ -1,0 +1,59 @@
+{
+ "cardData": {
+  "license": "other"
+ },
+ "gated": false,
+ "id": "facebook/opt-125m",
+ "pipeline_tag": "text-generation",
+ "sha": "27dcfa74d334bc871f3234de431e71c6eeba5dd6",
+ "siblings": [
+  {
+   "rfilename": ".gitattributes",
+   "size": 1173
+  },
+  {
+   "rfilename": "LICENSE.md",
+   "size": 11117
+  },
+  {
+   "rfilename": "README.md",
+   "size": 7099
+  },
+  {
+   "rfilename": "config.json",
+   "size": 651
+  },
+  {
+   "rfilename": "flax_model.msgpack",
+   "size": 250485441
+  },
+  {
+   "rfilename": "generation_config.json",
+   "size": 137
+  },
+  {
+   "rfilename": "merges.txt",
+   "size": 456318
+  },
+  {
+   "rfilename": "pytorch_model.bin",
+   "size": 250540281
+  },
+  {
+   "rfilename": "special_tokens_map.json",
+   "size": 441
+  },
+  {
+   "rfilename": "tf_model.h5",
+   "size": 250709016
+  },
+  {
+   "rfilename": "tokenizer_config.json",
+   "size": 685
+  },
+  {
+   "rfilename": "vocab.json",
+   "size": 898822
+  }
+ ]
+}

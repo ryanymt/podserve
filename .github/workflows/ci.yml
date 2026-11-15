@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+jobs:
+  offline-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Python test dependencies
+        run: pip install pyyaml
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.14.1"
+          terraform_wrapper: false
+
+      - name: Mirror Terraform providers for offline checks
+        run: terraform -chdir=deploy/terraform providers mirror "$HOME/.cache/podserve/tf-mirror"
+
+      - name: Build CLI and packages
+        run: go build ./...
+
+      - name: Run test suite
+        run: bash tests/run.sh
+
+      - name: Run linters
+        run: bash tests/lint.sh

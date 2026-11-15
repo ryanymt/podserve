@@ -1,0 +1,186 @@
+# Render golden (P01 T2): Qwen3-14B, 2x L4 (tensor-parallel 2), on-demand, a custom served name,
+# one extra argument, 2 replicas, 85% GPU memory, and a 16 GB largest file (fetch volume above the
+# 10Gi minimum: ceil((16e9 + 2Gi) / 1Gi) = 17Gi). Same document order and comparison as qwen3-8b.
+apiVersion: podserve.dev/v1alpha1
+kind: ModelService
+metadata:
+  name: qwen3-14b
+  namespace: podserve
+  labels:
+    app.kubernetes.io/managed-by: podserve
+spec:
+  model:
+    source: hf://Qwen/Qwen3-14B
+    revision: main
+  servedModelName: qwen-14b
+  accelerator:
+    type: nvidia-l4
+    count: 2
+    spot: false
+  engine:
+    gpuMemoryPercent: 85
+    extraArgs: ["--enable-prefix-caching"]
+  replicas: 2
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: podserve-fetch-7a341d57a3e4
+  namespace: podserve
+  labels:
+    app.kubernetes.io/managed-by: podserve
+    app.kubernetes.io/component: fetch
+    podserve.dev/fetch: 7a341d57a3e4
+    podserve.dev/revision: 40c069824f4251a91eefaf281ebe4c544efd3e18
+  annotations:
+    podserve.dev/repo: Qwen/Qwen3-14B
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/managed-by: podserve
+        app.kubernetes.io/component: fetch
+        podserve.dev/fetch: 7a341d57a3e4
+    spec:
+      serviceAccountName: podserve-fetch
+      restartPolicy: Never
+      containers:
+      - name: fetch
+        image: us-central1-docker.pkg.dev/my-project/podserve/fetch@sha256:0000000000000000000000000000000000000000000000000000000000000001
+        command: ["python", "-I", "/app/fetch.py"]
+        env:
+        - {name: PODSERVE_REPO, value: Qwen/Qwen3-14B}
+        - {name: PODSERVE_REVISION, value: 40c069824f4251a91eefaf281ebe4c544efd3e18}
+        - {name: PODSERVE_DEST, value: gs://my-project-podserve-models/models/hf/Qwen/Qwen3-14B/40c069824f4251a91eefaf281ebe4c544efd3e18}
+        - {name: PODSERVE_HF_TOKEN_SECRET, value: projects/my-project/secrets/podserve-hf-token}
+        - {name: PODSERVE_SCRATCH, value: /scratch}
+        - {name: HF_HUB_DISABLE_PROGRESS_BARS, value: "1"}
+        resources:
+          requests: {cpu: "2", memory: 8Gi}
+        volumeMounts:
+        - {name: scratch, mountPath: /scratch}
+      volumes:
+      - name: scratch
+        ephemeral:
+          volumeClaimTemplate:
+            spec:
+              accessModes: [ReadWriteOnce]
+              storageClassName: standard-rwo
+              resources:
+                requests: {storage: 17Gi}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qwen3-14b
+  namespace: podserve
+  labels: &labels
+    app.kubernetes.io/managed-by: podserve
+    app.kubernetes.io/component: server
+    podserve.dev/model: qwen3-14b
+    podserve.dev/revision: 40c069824f4251a91eefaf281ebe4c544efd3e18
+  ownerReferences:
+  - apiVersion: podserve.dev/v1alpha1
+    kind: ModelService
+    name: qwen3-14b
+    uid: 66666666-7777-8888-9999-000000000000
+    controller: true
+    blockOwnerDeletion: true
+spec:
+  replicas: 2
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      podserve.dev/model: qwen3-14b
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      serviceAccountName: podserve-model
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 25
+      nodeSelector:
+        cloud.google.com/gke-accelerator: nvidia-l4
+        cloud.google.com/gke-gpu-driver-version: latest
+      containers:
+      - name: vllm
+        image: us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34
+        args:
+        - gs://my-project-podserve-models/models/hf/Qwen/Qwen3-14B/40c069824f4251a91eefaf281ebe4c544efd3e18/
+        - --load-format=runai_streamer
+        - '--model-loader-extra-config={"distributed":true,"memory_limit":4294967296}'
+        - --served-model-name=qwen-14b
+        - --tensor-parallel-size=2
+        - --max-model-len=32768
+        - --gpu-memory-utilization=0.85
+        - --dtype=bfloat16
+        - --port=8000
+        - --enable-prefix-caching
+        env:
+        - {name: HF_HUB_OFFLINE, value: "1"}
+        ports:
+        - {name: http, containerPort: 8000}
+        resources:
+          requests: {cpu: "20", memory: 80Gi, ephemeral-storage: 10Gi}
+          limits: {nvidia.com/gpu: "2"}
+        startupProbe:
+          httpGet: {path: /health, port: http}
+          periodSeconds: 10
+          failureThreshold: 180
+        readinessProbe:
+          httpGet: {path: /health, port: http}
+          periodSeconds: 10
+        volumeMounts:
+        - {name: shm, mountPath: /dev/shm}
+      volumes:
+      - name: shm
+        emptyDir: {medium: Memory, sizeLimit: 8Gi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qwen3-14b
+  namespace: podserve
+  labels:
+    app.kubernetes.io/managed-by: podserve
+    app.kubernetes.io/component: server
+    podserve.dev/model: qwen3-14b
+  ownerReferences:
+  - apiVersion: podserve.dev/v1alpha1
+    kind: ModelService
+    name: qwen3-14b
+    uid: 66666666-7777-8888-9999-000000000000
+    controller: true
+    blockOwnerDeletion: true
+spec:
+  type: ClusterIP
+  selector:
+    podserve.dev/model: qwen3-14b
+  ports:
+  - {name: http, port: 8000, targetPort: http}
+---
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  name: qwen3-14b
+  namespace: podserve
+  labels:
+    app.kubernetes.io/managed-by: podserve
+    app.kubernetes.io/component: server
+    podserve.dev/model: qwen3-14b
+  ownerReferences:
+  - apiVersion: podserve.dev/v1alpha1
+    kind: ModelService
+    name: qwen3-14b
+    uid: 66666666-7777-8888-9999-000000000000
+    controller: true
+    blockOwnerDeletion: true
+spec:
+  selector:
+    matchLabels:
+      podserve.dev/model: qwen3-14b
+  endpoints:
+  - {port: http, path: /metrics, interval: 15s}

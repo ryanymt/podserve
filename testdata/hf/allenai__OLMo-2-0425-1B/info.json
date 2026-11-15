@@ -1,0 +1,59 @@
+{
+ "cardData": {
+  "license": "apache-2.0"
+ },
+ "gated": false,
+ "id": "allenai/OLMo-2-0425-1B",
+ "pipeline_tag": "text-generation",
+ "sha": "a1847dff35000b4271fa70afc5db10fd29fedbdf",
+ "siblings": [
+  {
+   "rfilename": ".gitattributes",
+   "size": 1519
+  },
+  {
+   "rfilename": "README.md",
+   "size": 12892
+  },
+  {
+   "rfilename": "config.json",
+   "size": 623
+  },
+  {
+   "rfilename": "generation_config.json",
+   "size": 121
+  },
+  {
+   "rfilename": "merges.txt",
+   "size": 916646
+  },
+  {
+   "rfilename": "model-00001-of-00002.safetensors",
+   "size": 4983360992
+  },
+  {
+   "rfilename": "model-00002-of-00002.safetensors",
+   "size": 956326560
+  },
+  {
+   "rfilename": "model.safetensors.index.json",
+   "size": 14873
+  },
+  {
+   "rfilename": "special_tokens_map.json",
+   "size": 125
+  },
+  {
+   "rfilename": "tokenizer.json",
+   "size": 7137177
+  },
+  {
+   "rfilename": "tokenizer_config.json",
+   "size": 4345
+  },
+  {
+   "rfilename": "vocab.json",
+   "size": 1611056
+  }
+ ]
+}

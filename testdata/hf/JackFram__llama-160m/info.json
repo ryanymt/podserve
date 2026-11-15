@@ -1,0 +1,87 @@
+{
+ "cardData": {
+  "license": "apache-2.0"
+ },
+ "gated": false,
+ "id": "JackFram/llama-160m",
+ "pipeline_tag": "text-generation",
+ "sha": "aca9b687d1425f863dcf5de9a4c96e3fe36266dd",
+ "siblings": [
+  {
+   "rfilename": ".gitattributes",
+   "size": 1477
+  },
+  {
+   "rfilename": "README.md",
+   "size": 921
+  },
+  {
+   "rfilename": "config.json",
+   "size": 555
+  },
+  {
+   "rfilename": "generation_config.json",
+   "size": 107
+  },
+  {
+   "rfilename": "model.safetensors",
+   "size": 649684840
+  },
+  {
+   "rfilename": "optimizer.pt",
+   "size": 1299405253
+  },
+  {
+   "rfilename": "pytorch_model.bin",
+   "size": 649712185
+  },
+  {
+   "rfilename": "rng_state.pth",
+   "size": 14575
+  },
+  {
+   "rfilename": "rng_state_0.pth",
+   "size": 17655
+  },
+  {
+   "rfilename": "rng_state_1.pth",
+   "size": 17655
+  },
+  {
+   "rfilename": "rng_state_2.pth",
+   "size": 17655
+  },
+  {
+   "rfilename": "rng_state_3.pth",
+   "size": 17655
+  },
+  {
+   "rfilename": "scheduler.pt",
+   "size": 627
+  },
+  {
+   "rfilename": "special_tokens_map.json",
+   "size": 414
+  },
+  {
+   "rfilename": "tokenizer.json",
+   "size": 1842767
+  },
+  {
+   "rfilename": "tokenizer.model",
+   "size": 499723
+  },
+  {
+   "rfilename": "tokenizer_config.json",
+   "size": 776
+  },
+  {
+   "rfilename": "trainer_state.json",
+   "size": 370719
+  },
+  {
+   "rfilename": "training_args.bin",
+   "size": 3899
+  }
+ ]
+}

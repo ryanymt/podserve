@@ -1,0 +1,6 @@
+# Runtime dependencies of the fetch job (P01 T1 spine; docs/design/platform.md). Pinned to the
+# versions the tests run against locally. Changing them is a spine change.
+huggingface_hub==1.1.4
+hf_xet==1.2.0
+google-cloud-storage==3.4.1
+google-cloud-secret-manager==2.26.0

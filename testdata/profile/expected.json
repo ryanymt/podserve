@@ -1,0 +1,445 @@
+{
+ "cases": [
+  {
+   "name": "qwen3-8b-auto",
+   "result": {
+    "deployable": true,
+    "dtype": "bfloat16",
+    "gpuCount": 1,
+    "gpuMemoryPercent": 90,
+    "gpuType": "nvidia-l4",
+    "kvBytesPerToken": 147456,
+    "kvCacheBytes": 2671109144,
+    "maxModelLen": 17408,
+    "seqsAtMaxLen": 1,
+    "shape": {
+     "cpu": "6",
+     "gpus": 1,
+     "machineType": "g2-standard-8",
+     "memory": "24Gi"
+    },
+    "tensorParallelSize": 1,
+    "tokenCapacity": 18114,
+    "warnings": [],
+    "weightsBytes": 16381516776
+   }
+  },
+  {
+   "name": "qwen3-14b-auto",
+   "result": {
+    "deployable": true,
+    "dtype": "bfloat16",
+    "gpuCount": 2,
+    "gpuMemoryPercent": 90,
+    "gpuType": "nvidia-l4",
+    "kvBytesPerToken": 163840,
+    "kvCacheBytes": 8568586200,
+    "maxModelLen": 40960,
+    "seqsAtMaxLen": 1,
+    "shape": {
+     "cpu": "20",
+     "gpus": 2,
+     "machineType": "g2-standard-24",
+     "memory": "80Gi"
+    },
+    "tensorParallelSize": 2,
+    "tokenCapacity": 52298,
+    "warnings": [],
+    "weightsBytes": 29536665640
+   }
+  },
+  {
+   "name": "qwen3-32b-auto",
+   "result": {
+    "deployable": true,
+    "dtype": "bfloat16",
+    "gpuCount": 4,
+    "gpuMemoryPercent": 90,
+    "gpuType": "nvidia-l4",
+    "kvBytesPerToken": 262144,
+    "kvCacheBytes": 10686175120,
+    "maxModelLen": 39936,
+    "seqsAtMaxLen": 1,
+    "shape": {
+     "cpu": "44",
+     "gpus": 4,
+     "machineType": "g2-standard-48",
+     "memory": "176Gi"
+    },
+    "tensorParallelSize": 4,
+    "tokenCapacity": 40764,
+    "warnings": [],
+    "weightsBytes": 65524328560
+   }
+  },
+  {
+   "name": "qwen3-30b-a3b-moe",
+   "result": {
+    "deployable": true,
+    "dtype": "bfloat16",
+    "gpuCount": 4,
+    "gpuMemoryPercent": 90,
+    "gpuType": "nvidia-l4",
+    "kvBytesPerToken": 98304,
+    "kvCacheBytes": 15143928032,
+    "maxModelLen": 40960,
+    "seqsAtMaxLen": 3,
+    "shape": {
+     "cpu": "44",
+     "gpus": 4,
+     "machineType": "g2-standard-48",
+     "memory": "176Gi"
+    },
+    "tensorParallelSize": 4,
+    "tokenCapacity": 154052,
+    "warnings": [],
+    "weightsBytes": 61066575648
+   }
+  },
+  {
+   "name": "deepseek-v2-lite-mla",
+   "result": {
+    "deployable": true,
+    "dtype": "bfloat16",
+    "gpuCount": 2,
+    "gpuMemoryPercent": 90,
+    "gpuType": "nvidia-l4",
+    "kvBytesPerToken": 31104,
+    "kvCacheBytes": 6691625264,
+    "maxModelLen": 107520,
+    "seqsAtMaxLen": 1,
+    "shape": {
+     "cpu": "20",
+     "gpus": 2,
+     "machineType": "g2-standard-24",
+     "memory": "80Gi"
+    },
+    "tensorParallelSize": 2,
+    "tokenCapacity": 107568,
+    "warnings": [],
+    "weightsBytes": 31413626576
+   }
+  },
+  {
+   "name": "llama-160m-fp32",
+   "result": {
+    "deployable": true,
+    "dtype": "bfloat16",
+    "gpuCount": 1,
+    "gpuMemoryPercent": 90,
+    "gpuType": "nvidia-l4",
+    "kvBytesPerToken": 36864,
+    "kvCacheBytes": 18727783500,
+    "maxModelLen": 2048,
+    "seqsAtMaxLen": 248,
+    "shape": {
+     "cpu": "6",
+     "gpus": 1,
+     "machineType": "g2-standard-8",
+     "memory": "24Gi"
+    },
+    "tensorParallelSize": 1,
+    "tokenCapacity": 508023,
+    "warnings": [],
+    "weightsBytes": 324842420
+   }
+  },
+  {
+   "name": "qwen3-8b-fp8-prequantised",
+   "result": {
+    "deployable": true,
+    "dtype": "bfloat16",
+    "gpuCount": 1,
+    "gpuMemoryPercent": 90,
+    "gpuType": "nvidia-l4",
+    "kvBytesPerToken": 147456,
+    "kvCacheBytes": 9615997136,
+    "maxModelLen": 40960,
+    "seqsAtMaxLen": 1,
+    "shape": {
+     "cpu": "6",
+     "gpus": 1,
+     "machineType": "g2-standard-8",
+     "memory": "24Gi"
+    },
+    "tensorParallelSize": 1,
+    "tokenCapacity": 65212,
+    "warnings": [],
+    "weightsBytes": 9436628784
+   }
+  },
+  {
+   "name": "llama-3.1-gated-no-token",
+   "refusal": {
+    "code": "GATED_NO_TOKEN",
+    "message": "the model is gated; set HF_TOKEN to a token whose owner has accepted its licence"
+   }
+  },
+  {
+   "name": "llama-3.1-gated-token-no-config",
+   "refusal": {
+    "code": "INVALID_CONFIG",
+    "message": "config.json is unreadable or incomplete: config.json could not be read"
+   }
+  },
+  {
+   "name": "opt-125m-bin-only",
+   "refusal": {
+    "code": "NO_SAFETENSORS",
+    "message": "the repository has no .safetensors weights; podserve does not load pickle (.bin) weights"
+   }
+  },
+  {
+   "name": "rwkv-unsupported",
+   "refusal": {
+    "code": "UNSUPPORTED_ARCHITECTURE",
+    "message": "architecture RwkvForCausalLM is not supported by vLLM v0.32.0"
+   }
+  },
+  {
+   "name": "olmo2-transformers-backend",
+   "refusal": {
+    "code": "UNSUPPORTED_ARCHITECTURE",
+    "message": "architecture Olmo2ForCausalLM is not supported by vLLM v0.32.0"
+   }
+  },
+  {
+   "name": "qwen2.5-vl-vision",
+   "refusal": {
+    "code": "NOT_TEXT_GENERATION",
+    "message": "its Hub pipeline tag is image-text-to-text; podserve v0.1 serves text-generation models only"
+   }
+  },
+  {
+   "name": "qwen3-embedding",
+   "refusal": {
+    "code": "NOT_TEXT_GENERATION",
+    "message": "its Hub pipeline tag is feature-extraction; podserve v0.1 serves text-generation models only"
+   }
+  },
+  {
+   "name": "ministral-duplicate-weights",
+   "result": {
+    "deployable": true,
+    "dtype": "bfloat16",
+    "gpuCount": 1,
+    "gpuMemoryPercent": 90,
+    "gpuType": "nvidia-l4",
+    "kvBytesPerToken": 147456,
+    "kvCacheBytes": 3012971328,
+    "maxModelLen": 19456,
+    "seqsAtMaxLen": 1,
+    "shape": {
+     "cpu": "6",
+     "gpus": 1,
+     "machineType": "g2-standard-8",
+     "memory": "24Gi"
+    },
+    "tensorParallelSize": 1,
+    "tokenCapacity": 20433,
+    "warnings": [
+     "model has no pipeline_tag; treating it as text-generation because its architecture is MistralForCausalLM"
+    ],
+    "weightsBytes": 16039654592
+   }
+  },
+  {
+   "name": "qwen3-235b-not-deployable",
+   "result": {
+    "deployable": false,
+    "dtype": "bfloat16",
+    "gpuCount": 8,
+    "gpuMemoryPercent": 90,
+    "gpuType": "nvidia-a100-80gb",
+    "kvBytesPerToken": 192512,
+    "kvCacheBytes": 120240298984,
+    "maxModelLen": 40960,
+    "seqsAtMaxLen": 7,
+    "shape": {
+     "cpu": "90",
+     "gpus": 8,
+     "machineType": "a2-ultragpu-8g",
+     "memory": "1200Gi"
+    },
+    "tensorParallelSize": 8,
+    "tokenCapacity": 312292,
+    "warnings": [],
+    "weightsBytes": 470191875096
+   }
+  },
+  {
+   "name": "deepseek-v3-does-not-fit",
+   "refusal": {
+    "code": "DOES_NOT_FIT",
+    "message": "needs about 641.3 GiB for weights; the largest option tried (8x nvidia-h100-80gb) has room for 550.1 GiB"
+   }
+  },
+  {
+   "name": "gpt2-legacy-keys",
+   "result": {
+    "deployable": true,
+    "dtype": "bfloat16",
+    "gpuCount": 1,
+    "gpuMemoryPercent": 90,
+    "gpuType": "nvidia-l4",
+    "kvBytesPerToken": 36864,
+    "kvCacheBytes": 18504520749,
+    "maxModelLen": 1024,
+    "seqsAtMaxLen": 490,
+    "shape": {
+     "cpu": "6",
+     "gpus": 1,
+     "machineType": "g2-standard-8",
+     "memory": "24Gi"
+    },
+    "tensorParallelSize": 1,
+    "tokenCapacity": 501967,
+    "warnings": [
+     "config.json has no dtype; serving in bfloat16"
+    ],
+    "weightsBytes": 548105171
+   }
+  },
+  {
+   "name": "qwen3-8b-two-gpus",
+   "result": {
+    "deployable": true,
+    "dtype": "bfloat16",
+    "gpuCount": 2,
+    "gpuMemoryPercent": 90,
+    "gpuType": "nvidia-l4",
+    "kvBytesPerToken": 147456,
+    "kvCacheBytes": 21723735064,
+    "maxModelLen": 40960,
+    "seqsAtMaxLen": 3,
+    "shape": {
+     "cpu": "20",
+     "gpus": 2,
+     "machineType": "g2-standard-24",
+     "memory": "80Gi"
+    },
+    "tensorParallelSize": 2,
+    "tokenCapacity": 147323,
+    "warnings": [],
+    "weightsBytes": 16381516776
+   }
+  },
+  {
+   "name": "qwen3-8b-context-8k",
+   "result": {
+    "deployable": true,
+    "dtype": "bfloat16",
+    "gpuCount": 1,
+    "gpuMemoryPercent": 90,
+    "gpuType": "nvidia-l4",
+    "kvBytesPerToken": 147456,
+    "kvCacheBytes": 2671109144,
+    "maxModelLen": 8192,
+    "seqsAtMaxLen": 2,
+    "shape": {
+     "cpu": "6",
+     "gpus": 1,
+     "machineType": "g2-standard-8",
+     "memory": "24Gi"
+    },
+    "tensorParallelSize": 1,
+    "tokenCapacity": 18114,
+    "warnings": [],
+    "weightsBytes": 16381516776
+   }
+  },
+  {
+   "name": "qwen3-8b-context-too-long",
+   "refusal": {
+    "code": "INVALID_CONFIG",
+    "message": "config.json is unreadable or incomplete: maxModelLen 50000 exceeds the model's maximum 40960"
+   }
+  },
+  {
+   "name": "qwen3-8b-on-h100",
+   "result": {
+    "deployable": false,
+    "dtype": "bfloat16",
+    "gpuCount": 1,
+    "gpuMemoryPercent": 90,
+    "gpuType": "nvidia-h100-80gb",
+    "kvBytesPerToken": 147456,
+    "kvCacheBytes": 57449767960,
+    "maxModelLen": 40960,
+    "seqsAtMaxLen": 9,
+    "shape": {
+     "cpu": "24",
+     "gpus": 1,
+     "machineType": "a3-highgpu-1g",
+     "memory": "200Gi"
+    },
+    "tensorParallelSize": 1,
+    "tokenCapacity": 389606,
+    "warnings": [],
+    "weightsBytes": 16381516776
+   }
+  },
+  {
+   "name": "qwen3-8b-unknown-gpu",
+   "refusal": {
+    "code": "UNKNOWN_GPU_TYPE",
+    "message": "unknown GPU type tpu-v5e; known types: nvidia-l4, nvidia-tesla-a100, nvidia-a100-80gb, nvidia-h100-80gb"
+   }
+  },
+  {
+   "name": "qwen3-8b-memory-70",
+   "result": {
+    "deployable": true,
+    "dtype": "bfloat16",
+    "gpuCount": 2,
+    "gpuMemoryPercent": 70,
+    "gpuType": "nvidia-l4",
+    "kvBytesPerToken": 147456,
+    "kvCacheBytes": 12062155800,
+    "maxModelLen": 40960,
+    "seqsAtMaxLen": 1,
+    "shape": {
+     "cpu": "20",
+     "gpus": 2,
+     "machineType": "g2-standard-24",
+     "memory": "80Gi"
+    },
+    "tensorParallelSize": 2,
+    "tokenCapacity": 81801,
+    "warnings": [],
+    "weightsBytes": 16381516776
+   }
+  },
+  {
+   "name": "qwen3-14b-one-l4",
+   "refusal": {
+    "code": "DOES_NOT_FIT",
+    "message": "needs about 27.5 GiB for weights; the largest option tried (1x nvidia-l4) has room for 17.7 GiB"
+   }
+  },
+  {
+   "name": "qwen3-32b-on-a100-40",
+   "result": {
+    "deployable": false,
+    "dtype": "bfloat16",
+    "gpuCount": 2,
+    "gpuMemoryPercent": 90,
+    "gpuType": "nvidia-tesla-a100",
+    "kvBytesPerToken": 262144,
+    "kvCacheBytes": 5218899856,
+    "maxModelLen": 19456,
+    "seqsAtMaxLen": 1,
+    "shape": {
+     "cpu": "22",
+     "gpus": 2,
+     "machineType": "a2-highgpu-2g",
+     "memory": "150Gi"
+    },
+    "tensorParallelSize": 2,
+    "tokenCapacity": 19908,
+    "warnings": [],
+    "weightsBytes": 65524328560
+   }
+  }
+ ]
+}

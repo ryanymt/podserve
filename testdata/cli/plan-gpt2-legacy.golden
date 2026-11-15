@@ -1,0 +1,13 @@
+args: ["plan", "hf://openai-community/gpt2"]
+exit: 0
+--- stdout
+Model:        openai-community/gpt2 @ 607a30d783df (text-generation, mit)
+Architecture: GPT2LMHeadModel (supported by vLLM v0.32.0)
+Weights:      0.5 GiB, served as bfloat16
+GPU:          1x nvidia-l4 on g2-standard-8 (6 CPU, 24Gi)
+Parallelism:  tensor-parallel 1
+Context:      1024 tokens (model maximum 1024)
+KV cache:     17.2 GiB, 501967 tokens, 490 sequence(s) at full context
+Deployable:   yes
+warning: config.json has no dtype; serving in bfloat16
+--- stderr

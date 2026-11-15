@@ -1,0 +1,5 @@
+args: ["version"]
+exit: 0
+--- stdout
+podserve v0.1.0-test
+--- stderr

@@ -1,0 +1,75 @@
+{
+ "cardData": {
+  "license": "other"
+ },
+ "gated": false,
+ "id": "mistralai/Ministral-8B-Instruct-2410",
+ "pipeline_tag": null,
+ "sha": "2f494a194c5b980dfb9772cb92d26cbb671fce5a",
+ "siblings": [
+  {
+   "rfilename": ".gitattributes",
+   "size": 1618
+  },
+  {
+   "rfilename": "README.md",
+   "size": 29359
+  },
+  {
+   "rfilename": "config.json",
+   "size": 1412
+  },
+  {
+   "rfilename": "consolidated.safetensors",
+   "size": 16039651824
+  },
+  {
+   "rfilename": "generation_config.json",
+   "size": 116
+  },
+  {
+   "rfilename": "model-00001-of-00004.safetensors",
+   "size": 4983007904
+  },
+  {
+   "rfilename": "model-00002-of-00004.safetensors",
+   "size": 4999836776
+  },
+  {
+   "rfilename": "model-00003-of-00004.safetensors",
+   "size": 4983067960
+  },
+  {
+   "rfilename": "model-00004-of-00004.safetensors",
+   "size": 1073741952
+  },
+  {
+   "rfilename": "model.safetensors.index.json",
+   "size": 26922
+  },
+  {
+   "rfilename": "params.json",
+   "size": 296
+  },
+  {
+   "rfilename": "passkey_example.json",
+   "size": 406397
+  },
+  {
+   "rfilename": "special_tokens_map.json",
+   "size": 414
+  },
+  {
+   "rfilename": "tekken.json",
+   "size": 14801223
+  },
+  {
+   "rfilename": "tokenizer.json",
+   "size": 17078136
+  },
+  {
+   "rfilename": "tokenizer_config.json",
+   "size": 181258
+  }
+ ]
+}

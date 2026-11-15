@@ -1,0 +1,12 @@
+{
+ "weight_map": {
+  "lm_head.weight": "model-00008-of-00008.safetensors",
+  "model.embed_tokens.weight": "model-00001-of-00008.safetensors",
+  "model.layers.10.input_layernorm.weight": "model-00003-of-00008.safetensors",
+  "model.layers.15.input_layernorm.weight": "model-00004-of-00008.safetensors",
+  "model.layers.21.input_layernorm.weight": "model-00005-of-00008.safetensors",
+  "model.layers.27.input_layernorm.weight": "model-00006-of-00008.safetensors",
+  "model.layers.3.input_layernorm.weight": "model-00002-of-00008.safetensors",
+  "model.layers.33.input_layernorm.weight": "model-00007-of-00008.safetensors"
+ }
+}

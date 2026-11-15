@@ -1,0 +1,10 @@
+{
+  "build_service_account": {"sensitive": false, "type": "string", "value": "podserve-build@my-project.iam.gserviceaccount.com"},
+  "cluster_name": {"sensitive": false, "type": "string", "value": "podserve"},
+  "dockerhub_mirror": {"sensitive": false, "type": "string", "value": "us-central1-docker.pkg.dev/my-project/podserve-dockerhub"},
+  "hf_token_secret": {"sensitive": false, "type": "string", "value": "projects/my-project/secrets/podserve-hf-token"},
+  "images_repo": {"sensitive": false, "type": "string", "value": "us-central1-docker.pkg.dev/my-project/podserve"},
+  "model_bucket": {"sensitive": false, "type": "string", "value": "my-project-podserve-models"},
+  "project_id": {"sensitive": false, "type": "string", "value": "my-project"},
+  "region": {"sensitive": false, "type": "string", "value": "us-central1"}
+}

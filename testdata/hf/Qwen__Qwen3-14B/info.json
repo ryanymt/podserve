@@ -1,0 +1,83 @@
+{
+ "cardData": {
+  "license": "apache-2.0"
+ },
+ "gated": false,
+ "id": "Qwen/Qwen3-14B",
+ "pipeline_tag": "text-generation",
+ "sha": "40c069824f4251a91eefaf281ebe4c544efd3e18",
+ "siblings": [
+  {
+   "rfilename": ".gitattributes",
+   "size": 1570
+  },
+  {
+   "rfilename": "LICENSE",
+   "size": 11343
+  },
+  {
+   "rfilename": "README.md",
+   "size": 16670
+  },
+  {
+   "rfilename": "config.json",
+   "size": 728
+  },
+  {
+   "rfilename": "generation_config.json",
+   "size": 239
+  },
+  {
+   "rfilename": "merges.txt",
+   "size": 1671853
+  },
+  {
+   "rfilename": "model-00001-of-00008.safetensors",
+   "size": 3841788544
+  },
+  {
+   "rfilename": "model-00002-of-00008.safetensors",
+   "size": 3963750816
+  },
+  {
+   "rfilename": "model-00003-of-00008.safetensors",
+   "size": 3963750880
+  },
+  {
+   "rfilename": "model-00004-of-00008.safetensors",
+   "size": 3963750880
+  },
+  {
+   "rfilename": "model-00005-of-00008.safetensors",
+   "size": 3963750880
+  },
+  {
+   "rfilename": "model-00006-of-00008.safetensors",
+   "size": 3963750880
+  },
+  {
+   "rfilename": "model-00007-of-00008.safetensors",
+   "size": 3963750880
+  },
+  {
+   "rfilename": "model-00008-of-00008.safetensors",
+   "size": 1912371880
+  },
+  {
+   "rfilename": "model.safetensors.index.json",
+   "size": 36514
+  },
+  {
+   "rfilename": "tokenizer.json",
+   "size": 11422654
+  },
+  {
+   "rfilename": "tokenizer_config.json",
+   "size": 9732
+  },
+  {
+   "rfilename": "vocab.json",
+   "size": 2776833
+  }
+ ]
+}

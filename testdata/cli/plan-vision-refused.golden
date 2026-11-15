@@ -1,0 +1,5 @@
+args: ["plan", "hf://Qwen/Qwen2.5-VL-7B-Instruct"]
+exit: 3
+--- stdout
+--- stderr
+podserve: cannot serve Qwen/Qwen2.5-VL-7B-Instruct: its Hub pipeline tag is image-text-to-text; podserve v0.1 serves text-generation models only (NOT_TEXT_GENERATION)
