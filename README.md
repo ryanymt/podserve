@@ -79,7 +79,11 @@ terraform -chdir=deploy/terraform output -json > platform.json
 # Connect, and prepare the cluster (~1 min; builds the fetch image with Cloud Build)
 gcloud container clusters get-credentials podserve --region $REGION --project $PROJECT --dns-endpoint
 ./podserve init --config platform.json
+```
 
+> **Gated models (e.g., Llama, Gemma):** if your model requires a Hugging Face license agreement, export `HF_TOKEN` locally and store it in the `podserve-hf-token` Secret Manager secret before running `plan` and `deploy` — see [Hugging Face token in Secret Manager](#hugging-face-token-in-secret-manager).
+
+```bash
 # Serve a model (~16 min the first time, mostly copying 16 GB from the Hub)
 ./podserve plan hf://Qwen/Qwen3-8B
 ./podserve deploy hf://Qwen/Qwen3-8B
@@ -102,6 +106,20 @@ Clean up when finished (Autopilot releases the GPU node shortly after `podserve 
 ./podserve delete qwen3-8b
 terraform -chdir=deploy/terraform destroy
 ```
+
+## Hugging Face token in Secret Manager
+
+Open models (such as `Qwen/Qwen3-8B`) work with no token. For **gated models** (such as Llama or Gemma):
+
+1. Accept the model's license on huggingface.co.
+2. Make your Hugging Face token available in two places — locally via `HF_TOKEN` (used by `podserve plan` to inspect `config.json`) and in Google Cloud Secret Manager (used by the cluster's fetch Job when copying weights into GCS):
+
+```bash
+export HF_TOKEN=hf_...   # a token from huggingface.co/settings/tokens
+printf %s "$HF_TOKEN" | gcloud secrets versions add podserve-hf-token --project $PROJECT --data-file=-
+```
+
+`terraform apply` creates the `podserve-hf-token` Secret Manager secret empty so no token ever enters Terraform state. Only the fetch Job's Workload Identity principal (`podserve-fetch`) is granted `roles/secretmanager.secretAccessor`; serving vLLM pods have no access to the secret.
 
 ## How it works
 
@@ -175,7 +193,7 @@ In v0.1, `podserve deploy` accepts a Hugging Face model when:
 - It ships `.safetensors` weights (pickle `.bin` checkpoints are refused).
 - It fits on 1, 2, 4, or 8 `nvidia-l4` GPUs (`podserve plan` also evaluates `nvidia-tesla-a100`, `nvidia-a100-80gb`, and `nvidia-h100-80gb`).
 
-Gated models (such as Llama or Gemma) require a Hugging Face token stored both locally (`HF_TOKEN` for `podserve plan`) and in Secret Manager for the fetch Job—see [docs/quickstart.md#gated-models](docs/quickstart.md#gated-models).
+Gated models (such as Llama or Gemma) require a Hugging Face token stored both locally (`HF_TOKEN` for `podserve plan`) and in Secret Manager (`podserve-hf-token` for the fetch Job) — see [Hugging Face token in Secret Manager](#hugging-face-token-in-secret-manager) and [docs/quickstart.md#gated-models](docs/quickstart.md#gated-models).
 
 ## Vision and roadmap
 
