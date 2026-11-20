@@ -6,7 +6,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/podserve/podserve/pkg/platform"
+	"github.com/ryanymt/podserve/pkg/platform"
 )
 
 // Names the fetch Job owns that platform leaves to the renderer: its component value and repo

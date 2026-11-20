@@ -11,13 +11,25 @@
 //     deleted object's uid, recursively;
 //   - AutoReady: an applied Deployment immediately gets one Ready pod per replica and
 //     status.readyReplicas, and a created Job immediately completes;
+//   - Deployments as GKE runs them (P02 T2): pods belong to a ReplicaSet named
+//     <deployment>-<pod-template-hash>, labelled pod-template-hash and annotated with the
+//     deployment.kubernetes.io/revision, owned by the Deployment; a new pod template gets a new
+//     ReplicaSet and the old one's pods go (strategy Recreate); status carries observedGeneration,
+//     replicas, updatedReplicas and readyReplicas;
+//   - a JSON merge patch on a Deployment changes only the fields it names (D-027's stop); one that
+//     sets spec.replicas to 0 removes the pods;
+//   - events, and AddList to seed recorded `kubectl get -o json` lists (testdata/kube/failures/);
 //
 // plus helpers to drive the rest by hand (CompleteJob, FailJob, SetServingPods, ...).
 package fakekube
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -37,6 +49,8 @@ import (
 var Resources = map[schema.GroupVersionResource]string{
 	{Group: "podserve.dev", Version: "v1alpha1", Resource: "modelservices"}:               "ModelServiceList",
 	{Group: "apps", Version: "v1", Resource: "deployments"}:                               "DeploymentList",
+	{Group: "apps", Version: "v1", Resource: "replicasets"}:                               "ReplicaSetList",
+	{Version: "v1", Resource: "events"}:                                                   "EventList",
 	{Version: "v1", Resource: "services"}:                                                 "ServiceList",
 	{Group: "batch", Version: "v1", Resource: "jobs"}:                                     "JobList",
 	{Version: "v1", Resource: "pods"}:                                                     "PodList",
@@ -51,6 +65,7 @@ var (
 	gvrPods        = schema.GroupVersionResource{Version: "v1", Resource: "pods"}
 	gvrJobs        = schema.GroupVersionResource{Group: "batch", Version: "v1", Resource: "jobs"}
 	gvrDeployments = schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+	gvrReplicaSets = schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "replicasets"}
 )
 
 // Cluster is a fake API server plus garbage collector.
@@ -148,8 +163,11 @@ func (c *Cluster) onCreate(a k8stesting.Action) (bool, runtime.Object, error) {
 
 func (c *Cluster) onPatch(a k8stesting.Action) (bool, runtime.Object, error) {
 	act := a.(k8stesting.PatchAction)
+	if act.GetPatchType() == types.MergePatchType && act.GetResource() == gvrDeployments && act.GetSubresource() == "" {
+		return c.mergePatchDeployment(act)
+	}
 	if act.GetPatchType() != types.ApplyPatchType {
-		return false, nil, nil // let the default tracker handle merge/JSON patches
+		return false, nil, nil // let the default tracker handle other merge/JSON patches
 	}
 	gvr, ns, name := act.GetResource(), act.GetNamespace(), act.GetName()
 	if _, ok := Resources[gvr]; !ok {
@@ -407,9 +425,11 @@ const (
 	StageReady       Stage = "ready"       // Ready
 )
 
-// SetServingPods makes the Deployment's pods (one per replica, named NAME-0, NAME-1, ...) be at
-// stage, owned by the Deployment and labelled like its pod template; Ready also sets the
-// Deployment's status.readyReplicas.
+// SetServingPods makes the Deployment's pods be at stage: one per replica, named
+// <ReplicaSet>-<i>, owned by the ReplicaSet for the current pod template (created if needed, see
+// ensureReplicaSet) and labelled like the template plus pod-template-hash. The Deployment's status
+// records the rollout as observed: observedGeneration, replicas, updatedReplicas, and
+// readyReplicas when the stage is Ready.
 func (c *Cluster) SetServingPods(ns, deployment string, stage Stage) error {
 	dep, err := c.get(gvrDeployments, ns, deployment)
 	if err != nil {
@@ -419,9 +439,13 @@ func (c *Cluster) SetServingPods(ns, deployment string, stage Stage) error {
 	if !found {
 		replicas = 1
 	}
-	labels, _, _ := unstructured.NestedStringMap(dep.Object, "spec", "template", "metadata", "labels")
+	rs, err := c.ensureReplicaSet(dep, replicas)
+	if err != nil {
+		return err
+	}
+	labels, _, _ := unstructured.NestedStringMap(rs.Object, "metadata", "labels")
 	for i := int64(0); i < replicas; i++ {
-		name := fmt.Sprintf("%s-%d", deployment, i)
+		name := fmt.Sprintf("%s-%d", rs.GetName(), i)
 		pod := &unstructured.Unstructured{Object: map[string]any{
 			"apiVersion": "v1", "kind": "Pod",
 			"metadata": map[string]any{"name": name, "namespace": ns},
@@ -432,7 +456,8 @@ func (c *Cluster) SetServingPods(ns, deployment string, stage Stage) error {
 			l[k] = v
 		}
 		pod.Object["metadata"].(map[string]any)["labels"] = l
-		pod.SetOwnerReferences([]metav1.OwnerReference{{APIVersion: "apps/v1", Kind: "Deployment", Name: deployment, UID: dep.GetUID()}})
+		pod.SetOwnerReferences([]metav1.OwnerReference{{APIVersion: "apps/v1", Kind: "ReplicaSet", Name: rs.GetName(),
+			UID: rs.GetUID(), Controller: ptrTrue()}})
 		if existing, err := c.get(gvrPods, ns, name); err == nil {
 			pod.SetUID(existing.GetUID())
 			pod.SetCreationTimestamp(existing.GetCreationTimestamp())
@@ -450,7 +475,12 @@ func (c *Cluster) SetServingPods(ns, deployment string, stage Stage) error {
 	if stage == StageReady {
 		ready = replicas
 	}
-	dep.Object["status"] = map[string]any{"replicas": replicas, "readyReplicas": ready, "observedGeneration": dep.GetGeneration()}
+	rs.Object["status"] = map[string]any{"replicas": replicas, "readyReplicas": ready, "observedGeneration": rs.GetGeneration()}
+	if err := c.Tracker().Update(gvrReplicaSets, rs, ns); err != nil {
+		return err
+	}
+	dep.Object["status"] = map[string]any{"replicas": replicas, "updatedReplicas": replicas, "readyReplicas": ready,
+		"observedGeneration": dep.GetGeneration()}
 	return c.Tracker().Update(gvrDeployments, dep, ns)
 }
 
@@ -477,19 +507,342 @@ func podStatus(stage Stage) map[string]any {
 	}
 }
 
-// DeleteServingPods removes a Deployment's pods (as when it scales to zero or is deleted).
+// DeleteServingPods removes a Deployment's pods (as when it scales to zero or is deleted): every
+// pod owned by one of its ReplicaSets.
 func (c *Cluster) DeleteServingPods(ns, deployment string) error {
-	list, err := c.Tracker().List(gvrPods, gvrPods.GroupVersion().WithKind("Pod"), ns)
-	if err != nil {
-		return err
-	}
-	items, _ := toUnstructuredList(list)
-	for _, p := range items {
-		for _, ref := range p.GetOwnerReferences() {
-			if ref.Kind == "Deployment" && ref.Name == deployment {
-				_ = c.Tracker().Delete(gvrPods, ns, p.GetName())
+	for _, rs := range c.replicaSetsOf(ns, deployment) {
+		for _, p := range c.podsOf(ns, rs.GetName()) {
+			if err := c.Tracker().Delete(gvrPods, ns, p.GetName()); err != nil {
+				return err
 			}
 		}
 	}
 	return nil
+}
+
+// mergePatchDeployment applies a JSON merge patch (RFC 7386) to a Deployment: only the fields the
+// patch names change, the generation goes up when the spec does, and spec.replicas 0 removes the
+// pods (as the ReplicaSet controller would).
+func (c *Cluster) mergePatchDeployment(act k8stesting.PatchAction) (bool, runtime.Object, error) {
+	ns, name := act.GetNamespace(), act.GetName()
+	existing, err := c.get(gvrDeployments, ns, name)
+	if err != nil {
+		return true, nil, err
+	}
+	var patch map[string]any
+	if err := json.Unmarshal(act.GetPatch(), &patch); err != nil {
+		return true, nil, fmt.Errorf("fakekube: merge patch: %w", err)
+	}
+	next := existing.DeepCopy()
+	delete(patch, "status") // the main resource can't change status
+	mergeJSON(next.Object, patch)
+	if specChanged(existing, next) {
+		next.SetGeneration(existing.GetGeneration() + 1)
+	}
+	if err := c.Tracker().Update(gvrDeployments, next, ns); err != nil {
+		return true, nil, err
+	}
+	if r, found, _ := unstructured.NestedInt64(next.Object, "spec", "replicas"); found && r == 0 {
+		if err := c.scaleToZero(ns, name); err != nil {
+			return true, nil, err
+		}
+	} else if c.AutoReady {
+		_ = c.SetServingPods(ns, name, StageReady)
+	}
+	out, _ := c.get(gvrDeployments, ns, name)
+	return true, out, nil
+}
+
+// mergeJSON applies an RFC 7386 merge patch to target in place.
+func mergeJSON(target, patch map[string]any) {
+	for k, v := range patch {
+		if v == nil {
+			delete(target, k)
+			continue
+		}
+		if pm, ok := v.(map[string]any); ok {
+			if tm, ok := target[k].(map[string]any); ok {
+				mergeJSON(tm, pm)
+				continue
+			}
+		}
+		if f, ok := v.(float64); ok && f == float64(int64(f)) {
+			v = int64(f) // integers stay int64, as the API machinery decodes them
+		}
+		target[k] = v
+	}
+}
+
+// scaleToZero removes a Deployment's pods and records zero replicas in its and its ReplicaSets'
+// status.
+func (c *Cluster) scaleToZero(ns, deployment string) error {
+	if err := c.DeleteServingPods(ns, deployment); err != nil {
+		return err
+	}
+	for _, rs := range c.replicaSetsOf(ns, deployment) {
+		_ = unstructured.SetNestedField(rs.Object, int64(0), "spec", "replicas")
+		rs.Object["status"] = map[string]any{"replicas": int64(0), "observedGeneration": rs.GetGeneration()}
+		_ = c.Tracker().Update(gvrReplicaSets, &rs, ns)
+	}
+	dep, err := c.get(gvrDeployments, ns, deployment)
+	if err != nil {
+		return err
+	}
+	dep.Object["status"] = map[string]any{"replicas": int64(0), "readyReplicas": int64(0),
+		"updatedReplicas": int64(0), "observedGeneration": dep.GetGeneration()}
+	return c.Tracker().Update(gvrDeployments, dep, ns)
+}
+
+// replicaSetsOf lists the ReplicaSets a Deployment owns.
+func (c *Cluster) replicaSetsOf(ns, deployment string) []unstructured.Unstructured {
+	list, err := c.Tracker().List(gvrReplicaSets, gvrReplicaSets.GroupVersion().WithKind("ReplicaSet"), ns)
+	if err != nil {
+		return nil
+	}
+	items, _ := toUnstructuredList(list)
+	var out []unstructured.Unstructured
+	for _, rs := range items {
+		for _, ref := range rs.GetOwnerReferences() {
+			if ref.Kind == "Deployment" && ref.Name == deployment {
+				out = append(out, rs)
+			}
+		}
+	}
+	return out
+}
+
+// templateHash is the fake's pod-template-hash: the first 10 hex characters of the sha256 of the
+// pod template's JSON (the real controller uses a different hash; tests compare labels, never values).
+func templateHash(dep *unstructured.Unstructured) string {
+	b, _ := json.Marshal(dep.Object["spec"].(map[string]any)["template"])
+	sum := sha256.Sum256(b)
+	return hex.EncodeToString(sum[:])[:10]
+}
+
+// ensureReplicaSet returns the ReplicaSet for the Deployment's current pod template, creating it
+// (with the next revision) if needed. Every older ReplicaSet is scaled to zero and loses its pods,
+// as strategy Recreate does.
+func (c *Cluster) ensureReplicaSet(dep *unstructured.Unstructured, replicas int64) (*unstructured.Unstructured, error) {
+	ns, hash := dep.GetNamespace(), templateHash(dep)
+	name := dep.GetName() + "-" + hash
+	revision := 0
+	for _, rs := range c.replicaSetsOf(ns, dep.GetName()) {
+		if r, err := strconv.Atoi(rs.GetAnnotations()["deployment.kubernetes.io/revision"]); err == nil && r > revision {
+			revision = r
+		}
+		if rs.GetName() == name {
+			continue
+		}
+		for _, p := range c.podsOf(ns, rs.GetName()) {
+			_ = c.Tracker().Delete(gvrPods, ns, p.GetName())
+		}
+		_ = unstructured.SetNestedField(rs.Object, int64(0), "spec", "replicas")
+		rs.Object["status"] = map[string]any{"replicas": int64(0), "observedGeneration": rs.GetGeneration()}
+		_ = c.Tracker().Update(gvrReplicaSets, &rs, ns)
+	}
+	labels, _, _ := unstructured.NestedStringMap(dep.Object, "spec", "template", "metadata", "labels")
+	l := map[string]any{"pod-template-hash": hash}
+	for k, v := range labels {
+		l[k] = v
+	}
+	if rs, err := c.get(gvrReplicaSets, ns, name); err == nil {
+		_ = unstructured.SetNestedField(rs.Object, replicas, "spec", "replicas")
+		return rs, c.Tracker().Update(gvrReplicaSets, rs, ns)
+	}
+	tmpl, _, _ := unstructured.NestedMap(dep.Object, "spec", "template")
+	rs := &unstructured.Unstructured{Object: map[string]any{
+		"apiVersion": "apps/v1", "kind": "ReplicaSet",
+		"metadata": map[string]any{"name": name, "namespace": ns, "labels": l,
+			"annotations": map[string]any{"deployment.kubernetes.io/revision": strconv.Itoa(revision + 1)}},
+		"spec": map[string]any{"replicas": replicas, "template": tmpl},
+	}}
+	rs.SetOwnerReferences([]metav1.OwnerReference{{APIVersion: "apps/v1", Kind: "Deployment", Name: dep.GetName(),
+		UID: dep.GetUID(), Controller: ptrTrue()}})
+	c.stamp(rs)
+	return rs, c.Tracker().Create(gvrReplicaSets, rs, ns)
+}
+
+func ptrTrue() *bool { t := true; return &t }
+
+// podsOf lists the pods a ReplicaSet owns.
+func (c *Cluster) podsOf(ns, replicaSet string) []unstructured.Unstructured {
+	list, err := c.Tracker().List(gvrPods, gvrPods.GroupVersion().WithKind("Pod"), ns)
+	if err != nil {
+		return nil
+	}
+	items, _ := toUnstructuredList(list)
+	var out []unstructured.Unstructured
+	for _, p := range items {
+		for _, ref := range p.GetOwnerReferences() {
+			if ref.Kind == "ReplicaSet" && ref.Name == replicaSet {
+				out = append(out, p)
+			}
+		}
+	}
+	return out
+}
+
+// AddList seeds every item of a recorded `kubectl get ... -o json` list (a List, PodList, EventList,
+// ...), keeping the items as recorded (names, uids, labels, status). Items of kinds the fake doesn't
+// know are an error.
+func (c *Cluster) AddList(path string) error {
+	items, err := readList(path)
+	if err != nil {
+		return err
+	}
+	for _, u := range items {
+		gvr, ok := resourceFor(u.GetAPIVersion(), u.GetKind())
+		if !ok {
+			return fmt.Errorf("fakekube: %s: unknown kind %s/%s", path, u.GetAPIVersion(), u.GetKind())
+		}
+		c.stamp(u)
+		if err := c.Tracker().Create(gvr, u, u.GetNamespace()); err != nil {
+			return fmt.Errorf("fakekube: %s: %s %s: %w", path, u.GetKind(), u.GetName(), err)
+		}
+	}
+	return nil
+}
+
+// resourceFor maps an object's apiVersion and kind to a resource the fake knows.
+func resourceFor(apiVersion, kind string) (schema.GroupVersionResource, bool) {
+	gv, err := schema.ParseGroupVersion(apiVersion)
+	if err != nil {
+		return schema.GroupVersionResource{}, false
+	}
+	for gvr, listKind := range Resources {
+		if gvr.Group == gv.Group && gvr.Version == gv.Version && listKind == kind+"List" {
+			return gvr, true
+		}
+	}
+	return schema.GroupVersionResource{}, false
+}
+
+// SetServingPodsFrom gives a Deployment's pods the statuses recorded in a fixture directory
+// (testdata/kube/failures/<state>/: pods.json and events.json from `kubectl get -o json`). It makes
+// one pod per recorded pod, owned by the ReplicaSet of the Deployment's current template and named
+// <ReplicaSet>-<i>, with the recorded status (phase, conditions, container states, deletion), and
+// re-points the recorded events at those pods. So CLI tests see what GKE reported, on objects the
+// fake owns. The Deployment's status counts the pods that are Ready.
+func (c *Cluster) SetServingPodsFrom(ns, deployment, dir string) error {
+	pods, err := readList(dir + "/pods.json")
+	if err != nil {
+		return err
+	}
+	events, err := readList(dir + "/events.json")
+	if err != nil {
+		return err
+	}
+	dep, err := c.get(gvrDeployments, ns, deployment)
+	if err != nil {
+		return err
+	}
+	replicas, found, _ := unstructured.NestedInt64(dep.Object, "spec", "replicas")
+	if !found {
+		replicas = 1
+	}
+	rs, err := c.ensureReplicaSet(dep, replicas)
+	if err != nil {
+		return err
+	}
+	for _, p := range c.podsOf(ns, rs.GetName()) {
+		_ = c.Tracker().Delete(gvrPods, ns, p.GetName())
+	}
+	labels, _, _ := unstructured.NestedStringMap(rs.Object, "metadata", "labels")
+	renamed := map[string]string{}
+	ready := int64(0)
+	for i, recorded := range pods {
+		rec := recorded.Object
+		name := fmt.Sprintf("%s-%d", rs.GetName(), i)
+		renamed[recorded.GetName()] = name
+		pod := &unstructured.Unstructured{Object: map[string]any{
+			"apiVersion": "v1", "kind": "Pod",
+			"metadata": map[string]any{"name": name, "namespace": ns},
+			"status":   rec["status"],
+		}}
+		l := map[string]any{}
+		for k, v := range labels {
+			l[k] = v
+		}
+		pod.Object["metadata"].(map[string]any)["labels"] = l
+		if ts := recorded.GetDeletionTimestamp(); ts != nil {
+			pod.SetDeletionTimestamp(ts)
+		}
+		pod.SetOwnerReferences([]metav1.OwnerReference{{APIVersion: "apps/v1", Kind: "ReplicaSet", Name: rs.GetName(),
+			UID: rs.GetUID(), Controller: ptrTrue()}})
+		c.stamp(pod)
+		if err := c.Tracker().Create(gvrPods, pod, ns); err != nil {
+			return err
+		}
+		if conditionTrue(rec, "Ready") {
+			ready++
+		}
+	}
+	// a recording replaces the previous one's events for this Deployment's pods
+	gvrEvents := schema.GroupVersionResource{Version: "v1", Resource: "events"}
+	if list, err := c.Tracker().List(gvrEvents, gvrEvents.GroupVersion().WithKind("Event"), ns); err == nil {
+		old, _ := toUnstructuredList(list)
+		for _, e := range old {
+			if strings.HasPrefix(e.GetName(), deployment+".") {
+				_ = c.Tracker().Delete(gvrEvents, ns, e.GetName())
+			}
+		}
+	}
+	for i, ev := range events {
+		rec := ev.Object
+		involved, _, _ := unstructured.NestedString(rec, "involvedObject", "name")
+		if to, ok := renamed[involved]; ok {
+			_ = unstructured.SetNestedField(ev.Object, to, "involvedObject", "name")
+		} else if kind, _, _ := unstructured.NestedString(rec, "involvedObject", "kind"); kind == "Pod" {
+			continue // an event about a pod this fixture doesn't carry
+		}
+		ev.SetName(fmt.Sprintf("%s.%d", deployment, i))
+		ev.SetNamespace(ns)
+		ev.SetResourceVersion("")
+		ev.SetUID("")
+		c.stamp(ev)
+		if err := c.Tracker().Create(gvrEvents, ev, ns); err != nil {
+			return err
+		}
+	}
+	rs.Object["status"] = map[string]any{"replicas": replicas, "readyReplicas": ready, "observedGeneration": rs.GetGeneration()}
+	if err := c.Tracker().Update(gvrReplicaSets, rs, ns); err != nil {
+		return err
+	}
+	dep.Object["status"] = map[string]any{"replicas": replicas, "updatedReplicas": replicas, "readyReplicas": ready,
+		"observedGeneration": dep.GetGeneration()}
+	return c.Tracker().Update(gvrDeployments, dep, ns)
+}
+
+func conditionTrue(obj map[string]any, kind string) bool {
+	conds, _, _ := unstructured.NestedSlice(obj, "status", "conditions")
+	for _, c := range conds {
+		if m, ok := c.(map[string]any); ok && m["type"] == kind && m["status"] == "True" {
+			return true
+		}
+	}
+	return false
+}
+
+// readList decodes a recorded `kubectl get -o json` list the way the API machinery does (integers
+// stay int64), so code reading counts, exit codes and restart counts sees what it would live.
+func readList(path string) ([]*unstructured.Unstructured, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	var list struct {
+		Items []json.RawMessage `json:"items"`
+	}
+	if err := json.Unmarshal(b, &list); err != nil {
+		return nil, fmt.Errorf("fakekube: %s: %w", path, err)
+	}
+	out := make([]*unstructured.Unstructured, 0, len(list.Items))
+	for _, raw := range list.Items {
+		u := &unstructured.Unstructured{}
+		if err := u.UnmarshalJSON(raw); err != nil {
+			return nil, fmt.Errorf("fakekube: %s: %w", path, err)
+		}
+		out = append(out, u)
+	}
+	return out, nil
 }

@@ -7,8 +7,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/podserve/podserve/catalog"
-	"github.com/podserve/podserve/pkg/profile"
+	"github.com/ryanymt/podserve/catalog"
+	"github.com/ryanymt/podserve/pkg/profile"
 )
 
 func edgeModel(heads, maxPos int) profile.Model {

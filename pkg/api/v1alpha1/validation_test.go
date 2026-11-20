@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/podserve/podserve/pkg/api/v1alpha1"
+	"github.com/ryanymt/podserve/pkg/api/v1alpha1"
 )
 
 const valid = `

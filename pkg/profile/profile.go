@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/podserve/podserve/catalog"
+	"github.com/ryanymt/podserve/catalog"
 )
 
 // Plan picks a serving profile for one model revision, per docs/design/profile.md. A refusal is

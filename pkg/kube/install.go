@@ -11,7 +11,7 @@ import (
 
 	"sigs.k8s.io/yaml"
 
-	"github.com/podserve/podserve/pkg/platform"
+	"github.com/ryanymt/podserve/pkg/platform"
 )
 
 // Install server-side applies, in order: the CRD (crdYAML), the podserve namespace, the

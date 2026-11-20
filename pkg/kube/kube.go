@@ -15,10 +15,11 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 
-	"github.com/podserve/podserve/pkg/api/v1alpha1"
-	"github.com/podserve/podserve/pkg/platform"
+	"github.com/ryanymt/podserve/pkg/api/v1alpha1"
+	"github.com/ryanymt/podserve/pkg/platform"
 )
 
 // ApplyRecord server-side applies the ModelService (spec and metadata only) in the podserve
@@ -108,6 +109,65 @@ func (c *Client) List(ctx context.Context) ([]v1alpha1.ModelService, error) {
 	return out, nil
 }
 
+// Serving reads one model's serving objects — the input to Diagnose: its Deployment (an empty
+// Serving and no error when there is none yet), the ReplicaSets whose owner references name it, its
+// pods (labelled podserve.dev/model=NAME), and the namespace's events. Events and ReplicaSets are
+// filtered here and in Diagnose, not by field selector: the fake ignores it.
+func (c *Client) Serving(ctx context.Context, name string) (Serving, error) {
+	var s Serving
+	dep, err := c.deployments().Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return s, nil
+		}
+		return s, err
+	}
+	s.Deployment = dep
+	rss, err := c.replicaSets().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return s, err
+	}
+	for i := range rss.Items {
+		for _, ref := range rss.Items[i].GetOwnerReferences() {
+			if ref.Kind == "Deployment" && ref.Name == name {
+				s.ReplicaSets = append(s.ReplicaSets, rss.Items[i])
+				break
+			}
+		}
+	}
+	pods, err := c.pods().List(ctx, metav1.ListOptions{LabelSelector: platform.ModelLabel + "=" + name})
+	if err != nil {
+		return s, err
+	}
+	for _, p := range pods.Items {
+		if p.GetLabels()[platform.ModelLabel] == name {
+			s.Pods = append(s.Pods, p)
+		}
+	}
+	events, err := c.events().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return s, err
+	}
+	s.Events = events.Items
+	return s, nil
+}
+
+// Stop scales a model's Deployment to zero with a JSON merge patch on spec.replicas (D-027), so
+// Autopilot releases its GPU node while the ModelService and its Service stay. A merge patch,
+// never server-side apply: a partial apply would drop the pod template. A missing Deployment is
+// ErrNotFound.
+func (c *Client) Stop(ctx context.Context, name string) error {
+	patch := []byte(`{"spec":{"replicas":0}}`)
+	_, err := c.deployments().Patch(ctx, name, types.MergePatchType, patch, metav1.PatchOptions{})
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return fmt.Errorf("%s/%s: %w", platform.Namespace, name, ErrNotFound)
+		}
+		return err
+	}
+	return nil
+}
+
 // Typed views of the podserve namespace's resources.
 func (c *Client) modelservices() dynamic.ResourceInterface {
 	return c.Dynamic.Resource(ModelServices).Namespace(platform.Namespace)
@@ -117,8 +177,16 @@ func (c *Client) deployments() dynamic.ResourceInterface {
 	return c.Dynamic.Resource(Deployments).Namespace(platform.Namespace)
 }
 
+func (c *Client) replicaSets() dynamic.ResourceInterface {
+	return c.Dynamic.Resource(ReplicaSets).Namespace(platform.Namespace)
+}
+
 func (c *Client) pods() dynamic.ResourceInterface {
 	return c.Dynamic.Resource(Pods).Namespace(platform.Namespace)
+}
+
+func (c *Client) events() dynamic.ResourceInterface {
+	return c.Dynamic.Resource(Events).Namespace(platform.Namespace)
 }
 
 func (c *Client) jobs() dynamic.ResourceInterface {
@@ -221,24 +289,25 @@ func (c *Client) waitParams() (clk Clock, poll, timeout time.Duration) {
 	return clk, poll, timeout
 }
 
-// progressReporter is Options.Progress made nil-safe and once-per-stage: each stage is reported
-// the first time it is reached. The zero value never reports.
+// progressReporter is Options.Progress made nil-safe and reported on change: a stage is reported
+// each time it differs from the last one reported, so pods that fall back to an earlier stage (a
+// pod replaced after its spot node was reclaimed) report it again. The zero value never reports.
 type progressReporter struct {
 	progress func(Stage)
-	seen     map[Stage]bool
+	last     Stage
 }
 
 func newProgress(c *Client) *progressReporter {
 	if c.Options.Progress == nil {
 		return nil
 	}
-	return &progressReporter{progress: c.Options.Progress, seen: map[Stage]bool{}}
+	return &progressReporter{progress: c.Options.Progress}
 }
 
 func (p *progressReporter) reach(stage Stage) {
-	if p == nil || p.seen[stage] {
+	if p == nil || p.last == stage {
 		return
 	}
-	p.seen[stage] = true
+	p.last = stage
 	p.progress(stage)
 }

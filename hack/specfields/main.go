@@ -13,7 +13,7 @@ import (
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"sigs.k8s.io/yaml"
 
-	"github.com/podserve/podserve/config/crd"
+	"github.com/ryanymt/podserve/config/crd"
 )
 
 func main() {

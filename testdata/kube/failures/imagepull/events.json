@@ -1,0 +1,1659 @@
+{
+ "apiVersion": "v1",
+ "items": [
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T04:03:34Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "name": "qwen3-8b-66c4d696c8-twg5q",
+    "namespace": "podserve",
+    "resourceVersion": "1795061014885647019",
+    "uid": "262574d9-434a-4ef9-91dd-2220c7e2f4fa"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:03:34Z",
+   "message": "Successfully assigned podserve/qwen3-8b-66c4d696c8-twg5q to gk3-podserve-nap-7823w91j-5d215719-6566",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T04:03:34Z",
+    "name": "qwen3-8b-66c4d696c8-twg5q.18e9567b82251acc",
+    "namespace": "podserve",
+    "resourceVersion": "1795061014964415002",
+    "uid": "d7fbb5ce-1d95-4a23-8380-ecd4cf431b5a"
+   },
+   "reason": "Scheduled",
+   "reportingComponent": "gke.io/optimize-utilization-scheduler",
+   "reportingInstance": "",
+   "source": {
+    "component": "gke.io/optimize-utilization-scheduler"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 4,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T04:03:35Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-66c4d696c8-twg5q",
+    "namespace": "podserve",
+    "resourceVersion": "1795061014942351019",
+    "uid": "262574d9-434a-4ef9-91dd-2220c7e2f4fa"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:04:56Z",
+   "message": "Pulling image \"us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:0000000000000000000000000000000000000000000000000000000000000001\"",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T04:03:35Z",
+    "name": "qwen3-8b-66c4d696c8-twg5q.18e9567bab0a419b",
+    "namespace": "podserve",
+    "resourceVersion": "1795061096708047021",
+    "uid": "accc69ee-80f5-4dc4-8b91-235ea08ffec7"
+   },
+   "reason": "Pulling",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-6566",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-6566"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 4,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T04:03:36Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-66c4d696c8-twg5q",
+    "namespace": "podserve",
+    "resourceVersion": "1795061014942351019",
+    "uid": "262574d9-434a-4ef9-91dd-2220c7e2f4fa"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:04:57Z",
+   "message": "Failed to pull image \"us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:0000000000000000000000000000000000000000000000000000000000000001\": rpc error: code = NotFound desc = failed to pull and unpack image \"us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:0000000000000000000000000000000000000000000000000000000000000001\": failed to resolve reference \"us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:0000000000000000000000000000000000000000000000000000000000000001\": us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:0000000000000000000000000000000000000000000000000000000000000001: not found",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T04:03:36Z",
+    "name": "qwen3-8b-66c4d696c8-twg5q.18e9567be4b46ffa",
+    "namespace": "podserve",
+    "resourceVersion": "1795061097231135003",
+    "uid": "9b3cd9eb-e112-4279-8542-8ef33865b3ac"
+   },
+   "reason": "Failed",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-6566",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-6566"
+   },
+   "type": "Warning"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 4,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T04:03:36Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-66c4d696c8-twg5q",
+    "namespace": "podserve",
+    "resourceVersion": "1795061014942351019",
+    "uid": "262574d9-434a-4ef9-91dd-2220c7e2f4fa"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:04:57Z",
+   "message": "Error: ErrImagePull",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T04:03:36Z",
+    "name": "qwen3-8b-66c4d696c8-twg5q.18e9567be4b775bc",
+    "namespace": "podserve",
+    "resourceVersion": "1795061097275967021",
+    "uid": "5475cee9-674f-49e7-bd33-fa1320e162c7"
+   },
+   "reason": "Failed",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-6566",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-6566"
+   },
+   "type": "Warning"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 7,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T04:03:37Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-66c4d696c8-twg5q",
+    "namespace": "podserve",
+    "resourceVersion": "1795061014942351019",
+    "uid": "262574d9-434a-4ef9-91dd-2220c7e2f4fa"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:05:36Z",
+   "message": "Back-off pulling image \"us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:0000000000000000000000000000000000000000000000000000000000000001\"",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T04:03:37Z",
+    "name": "qwen3-8b-66c4d696c8-twg5q.18e9567c1c33b14b",
+    "namespace": "podserve",
+    "resourceVersion": "1795061136677375013",
+    "uid": "61595b10-61f4-4625-bd99-5bc156c16f5e"
+   },
+   "reason": "BackOff",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-6566",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-6566"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 7,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T04:03:37Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-66c4d696c8-twg5q",
+    "namespace": "podserve",
+    "resourceVersion": "1795061014942351019",
+    "uid": "262574d9-434a-4ef9-91dd-2220c7e2f4fa"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:05:36Z",
+   "message": "Error: ImagePullBackOff",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T04:03:37Z",
+    "name": "qwen3-8b-66c4d696c8-twg5q.18e9567c1c34e333",
+    "namespace": "podserve",
+    "resourceVersion": "1795061136708543021",
+    "uid": "c89d62d7-4e4a-456b-8f93-dec2aec961b9"
+   },
+   "reason": "Failed",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-6566",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-6566"
+   },
+   "type": "Warning"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T04:03:34Z",
+   "involvedObject": {
+    "apiVersion": "apps/v1",
+    "kind": "ReplicaSet",
+    "name": "qwen3-8b-66c4d696c8",
+    "namespace": "podserve",
+    "resourceVersion": "1795061014594079004",
+    "uid": "f37cdbf1-84d8-4338-8c14-2105b8d1ed21"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:03:34Z",
+   "message": "Created pod: qwen3-8b-66c4d696c8-twg5q",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T04:03:34Z",
+    "name": "qwen3-8b-66c4d696c8.18e9567b7ec314f1",
+    "namespace": "podserve",
+    "resourceVersion": "1795061014904063002",
+    "uid": "894f1d57-9a90-4a5f-ad43-a0b92adc651d"
+   },
+   "reason": "SuccessfulCreate",
+   "reportingComponent": "replicaset-controller",
+   "reportingInstance": "",
+   "source": {
+    "component": "replicaset-controller"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 2,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:44:59Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-f2wt9",
+    "namespace": "podserve",
+    "resourceVersion": "1795059899030527018",
+    "uid": "4ff91e6b-0a31-46a3-a1f9-a6129c3f9d8f"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:45:59Z",
+   "message": "0/2 nodes are available: 2 node(s) didn't match Pod's node affinity/selector. no new claims to deallocate, preemption: 0/2 nodes are available: 2 Preemption is not helpful for scheduling.",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:44:59Z",
+    "name": "qwen3-8b-68496b54d4-f2wt9.18e95577b33bdd29",
+    "namespace": "podserve",
+    "resourceVersion": "1795059959803743021",
+    "uid": "e0efe7f6-05f5-492b-88c0-4d13ee36dd2b"
+   },
+   "reason": "FailedScheduling",
+   "reportingComponent": "gke.io/optimize-utilization-scheduler",
+   "reportingInstance": "",
+   "source": {
+    "component": "gke.io/optimize-utilization-scheduler"
+   },
+   "type": "Warning"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:45:05Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-f2wt9",
+    "namespace": "podserve",
+    "resourceVersion": "1795059899165359018",
+    "uid": "4ff91e6b-0a31-46a3-a1f9-a6129c3f9d8f"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:45:05Z",
+   "message": "Pod triggered scale-up: [{https://www.googleapis.com/compute/v1/projects/my-project/zones/us-central1-a/instanceGroups/nap-7823w91j-temporary-mig-1av9gol1-async-2 0->1 (max: 1000)}]",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:45:05Z",
+    "name": "qwen3-8b-68496b54d4-f2wt9.18e955793661cdae",
+    "namespace": "podserve",
+    "resourceVersion": "1795059905627215016",
+    "uid": "b56d70ec-dbef-4440-9da0-c915ad60f22d"
+   },
+   "reason": "TriggeredScaleUp",
+   "reportingComponent": "cluster-autoscaler",
+   "reportingInstance": "",
+   "source": {
+    "component": "cluster-autoscaler"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:45:58Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-f2wt9",
+    "namespace": "podserve",
+    "resourceVersion": "1795059899165359018",
+    "uid": "4ff91e6b-0a31-46a3-a1f9-a6129c3f9d8f"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:45:58Z",
+   "message": "0/2 nodes are available: 1 node(s) didn't match Pod's node affinity/selector, 1 node(s) had untolerated taint(s). no new claims to deallocate, preemption: 0/2 nodes are available: 2 Preemption is not helpful for scheduling.",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:45:58Z",
+    "name": "qwen3-8b-68496b54d4-f2wt9.18e9558586f145cd",
+    "namespace": "podserve",
+    "resourceVersion": "1795059958543471010",
+    "uid": "0e39b5de-bc3e-4f74-8efe-a6715c87eca9"
+   },
+   "reason": "FailedScheduling",
+   "reportingComponent": "gke.io/optimize-utilization-scheduler",
+   "reportingInstance": "",
+   "source": {
+    "component": "gke.io/optimize-utilization-scheduler"
+   },
+   "type": "Warning"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 2,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:46:04Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-f2wt9",
+    "namespace": "podserve",
+    "resourceVersion": "1795059959796287018",
+    "uid": "4ff91e6b-0a31-46a3-a1f9-a6129c3f9d8f"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:46:04Z",
+   "message": "0/3 nodes are available: 1 node(s) had untolerated taint(s), 2 node(s) didn't match Pod's node affinity/selector. no new claims to deallocate, preemption: 0/3 nodes are available: 3 Preemption is not helpful for scheduling.",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:46:04Z",
+    "name": "qwen3-8b-68496b54d4-f2wt9.18e95586ee4d79c0",
+    "namespace": "podserve",
+    "resourceVersion": "1795059965032415002",
+    "uid": "567a8fa7-f018-4362-a46f-4a1994c36388"
+   },
+   "reason": "FailedScheduling",
+   "reportingComponent": "gke.io/optimize-utilization-scheduler",
+   "reportingInstance": "",
+   "source": {
+    "component": "gke.io/optimize-utilization-scheduler"
+   },
+   "type": "Warning"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 4,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:46:09Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-f2wt9",
+    "namespace": "podserve",
+    "resourceVersion": "1795059964535023018",
+    "uid": "4ff91e6b-0a31-46a3-a1f9-a6129c3f9d8f"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:46:27Z",
+   "message": "0/3 nodes are available: 1 Insufficient nvidia.com/gpu, 2 node(s) didn't match Pod's node affinity/selector. no new claims to deallocate, preemption: 0/3 nodes are available: 3 Preemption is not helpful for scheduling.",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:46:09Z",
+    "name": "qwen3-8b-68496b54d4-f2wt9.18e95588312be3e2",
+    "namespace": "podserve",
+    "resourceVersion": "1795059987818335023",
+    "uid": "b81521ff-1a62-4c94-8e22-e316381291f3"
+   },
+   "reason": "FailedScheduling",
+   "reportingComponent": "gke.io/optimize-utilization-scheduler",
+   "reportingInstance": "",
+   "source": {
+    "component": "gke.io/optimize-utilization-scheduler"
+   },
+   "type": "Warning"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:46:55Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-f2wt9",
+    "namespace": "podserve",
+    "resourceVersion": "1795059970010303018",
+    "uid": "4ff91e6b-0a31-46a3-a1f9-a6129c3f9d8f"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:46:55Z",
+   "message": "Successfully assigned podserve/qwen3-8b-68496b54d4-f2wt9 to gk3-podserve-nap-7823w91j-5d215719-67xr",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:46:55Z",
+    "name": "qwen3-8b-68496b54d4-f2wt9.18e95592d00add80",
+    "namespace": "podserve",
+    "resourceVersion": "1795060015540751016",
+    "uid": "b0a0744a-d4d1-401d-9e42-073aad812749"
+   },
+   "reason": "Scheduled",
+   "reportingComponent": "gke.io/optimize-utilization-scheduler",
+   "reportingInstance": "",
+   "source": {
+    "component": "gke.io/optimize-utilization-scheduler"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:46:56Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-f2wt9",
+    "namespace": "podserve",
+    "resourceVersion": "1795060015522575018",
+    "uid": "4ff91e6b-0a31-46a3-a1f9-a6129c3f9d8f"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:46:56Z",
+   "message": "Pulling image \"us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34\"",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:46:56Z",
+    "name": "qwen3-8b-68496b54d4-f2wt9.18e95592f8aa6156",
+    "namespace": "podserve",
+    "resourceVersion": "1795060016223967024",
+    "uid": "b5716ec3-a84b-47e0-a3e7-dda1fa05b544"
+   },
+   "reason": "Pulling",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-67xr",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-67xr"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:46:59Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-f2wt9",
+    "namespace": "podserve",
+    "resourceVersion": "1795060015522575018",
+    "uid": "4ff91e6b-0a31-46a3-a1f9-a6129c3f9d8f"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:46:59Z",
+   "message": "Successfully pulled image \"us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34\" in 3.653s (3.653s including waiting). Image size: 9205781514 bytes.",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:46:59Z",
+    "name": "qwen3-8b-68496b54d4-f2wt9.18e95593d270a18b",
+    "namespace": "podserve",
+    "resourceVersion": "1795060019900879006",
+    "uid": "01099972-047e-4b13-acfc-c6cd79e8f24c"
+   },
+   "reason": "Pulled",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-67xr",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-67xr"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:46:59Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-f2wt9",
+    "namespace": "podserve",
+    "resourceVersion": "1795060015522575018",
+    "uid": "4ff91e6b-0a31-46a3-a1f9-a6129c3f9d8f"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:46:59Z",
+   "message": "Container created",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:46:59Z",
+    "name": "qwen3-8b-68496b54d4-f2wt9.18e95593d7904ab4",
+    "namespace": "podserve",
+    "resourceVersion": "1795060019966943005",
+    "uid": "21624d66-3f79-4827-9aa1-cfa901d4ee14"
+   },
+   "reason": "Created",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-67xr",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-67xr"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:47:00Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-f2wt9",
+    "namespace": "podserve",
+    "resourceVersion": "1795060015522575018",
+    "uid": "4ff91e6b-0a31-46a3-a1f9-a6129c3f9d8f"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:47:00Z",
+   "message": "Container started",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:47:00Z",
+    "name": "qwen3-8b-68496b54d4-f2wt9.18e95593e099eff0",
+    "namespace": "podserve",
+    "resourceVersion": "1795060020110927023",
+    "uid": "1946083f-2641-4be5-bea1-e3be8d9691be"
+   },
+   "reason": "Started",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-67xr",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-67xr"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 2,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:47:05Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-f2wt9",
+    "namespace": "podserve",
+    "resourceVersion": "1795060015522575018",
+    "uid": "4ff91e6b-0a31-46a3-a1f9-a6129c3f9d8f"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:47:15Z",
+   "message": "Startup probe failed: Get \"http://10.32.0.133:8000/health\": dial tcp 10.32.0.133:8000: connect: connection refused",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:47:05Z",
+    "name": "qwen3-8b-68496b54d4-f2wt9.18e955953926c241",
+    "namespace": "podserve",
+    "resourceVersion": "1795060035902943019",
+    "uid": "adcebdb2-5dd1-488b-96f9-0dc7687db30d"
+   },
+   "reason": "Unhealthy",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-67xr",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-67xr"
+   },
+   "type": "Warning"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:47:23Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-f2wt9",
+    "namespace": "podserve",
+    "resourceVersion": "1795060015522575018",
+    "uid": "4ff91e6b-0a31-46a3-a1f9-a6129c3f9d8f"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:47:23Z",
+   "message": "Stopping container vllm",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:47:23Z",
+    "name": "qwen3-8b-68496b54d4-f2wt9.18e9559941edde76",
+    "namespace": "podserve",
+    "resourceVersion": "1795060043287551010",
+    "uid": "13d2a734-ca0b-4f66-84e3-440d3b2c7292"
+   },
+   "reason": "Killing",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-67xr",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-67xr"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:48:59Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-f2wt9",
+    "namespace": "podserve"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:48:59Z",
+   "message": "Cancelling deletion of Pod podserve/qwen3-8b-68496b54d4-f2wt9",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:48:59Z",
+    "name": "qwen3-8b-68496b54d4-f2wt9.18e955afc88a74e2",
+    "namespace": "podserve",
+    "resourceVersion": "1795060139977119023",
+    "uid": "22f70a3f-e51d-48d4-8a30-2b7144b081fb"
+   },
+   "reason": "TaintManagerEviction",
+   "reportingComponent": "taint-eviction-controller",
+   "reportingInstance": "",
+   "source": {
+    "component": "taint-eviction-controller"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 2,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:47:42Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-pddrd",
+    "namespace": "podserve",
+    "resourceVersion": "1795060062336111005",
+    "uid": "3323a4e4-7b1f-4555-be00-c71b7c2cb7f1"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:47:47Z",
+   "message": "0/3 nodes are available: 1 node(s) didn't match Pod's node affinity/selector, 1 node(s) had untolerated taint(s), 1 node(s) were unschedulable. no new claims to deallocate, preemption: 0/3 nodes are available: 3 Preemption is not helpful for scheduling.",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:47:42Z",
+    "name": "qwen3-8b-68496b54d4-pddrd.18e9559db79dde42",
+    "namespace": "podserve",
+    "resourceVersion": "1795060067514671022",
+    "uid": "d4fea67e-b528-4144-a1a3-8e7d7a559402"
+   },
+   "reason": "FailedScheduling",
+   "reportingComponent": "gke.io/optimize-utilization-scheduler",
+   "reportingInstance": "",
+   "source": {
+    "component": "gke.io/optimize-utilization-scheduler"
+   },
+   "type": "Warning"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:47:47Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-pddrd",
+    "namespace": "podserve",
+    "resourceVersion": "1795060062555791005",
+    "uid": "3323a4e4-7b1f-4555-be00-c71b7c2cb7f1"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:47:47Z",
+   "message": "Pod triggered scale-up: [{https://www.googleapis.com/compute/v1/projects/my-project/zones/us-central1-a/instanceGroups/gk3-podserve-nap-7823w91j-5d215719-grp 1->2 (max: 1000)}]",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:47:47Z",
+    "name": "qwen3-8b-68496b54d4-pddrd.18e9559ed2c05071",
+    "namespace": "podserve",
+    "resourceVersion": "1795060067133759017",
+    "uid": "550ee8bc-b635-4bb0-b0b9-1c824e7d9cf8"
+   },
+   "reason": "TriggeredScaleUp",
+   "reportingComponent": "cluster-autoscaler",
+   "reportingInstance": "",
+   "source": {
+    "component": "cluster-autoscaler"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 3,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:48:22Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-pddrd",
+    "namespace": "podserve",
+    "resourceVersion": "1795060062555791005",
+    "uid": "3323a4e4-7b1f-4555-be00-c71b7c2cb7f1"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:48:25Z",
+   "message": "0/4 nodes are available: 1 node(s) didn't match Pod's node affinity/selector, 1 node(s) were unschedulable, 2 node(s) had untolerated taint(s). no new claims to deallocate, preemption: 0/4 nodes are available: 4 Preemption is not helpful for scheduling.",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:48:22Z",
+    "name": "qwen3-8b-68496b54d4-pddrd.18e955a708366c8a",
+    "namespace": "podserve",
+    "resourceVersion": "1795060105655631013",
+    "uid": "5ac89366-4248-4ec6-9d2e-e4d8e294a675"
+   },
+   "reason": "FailedScheduling",
+   "reportingComponent": "gke.io/optimize-utilization-scheduler",
+   "reportingInstance": "",
+   "source": {
+    "component": "gke.io/optimize-utilization-scheduler"
+   },
+   "type": "Warning"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 8,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:48:27Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-pddrd",
+    "namespace": "podserve",
+    "resourceVersion": "1795060102692879005",
+    "uid": "3323a4e4-7b1f-4555-be00-c71b7c2cb7f1"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:48:56Z",
+   "message": "0/4 nodes are available: 1 Insufficient nvidia.com/gpu, 1 node(s) didn't match Pod's node affinity/selector, 1 node(s) had untolerated taint(s), 1 node(s) were unschedulable. no new claims to deallocate, preemption: 0/4 nodes are available: 4 Preemption is not helpful for scheduling.",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:48:27Z",
+    "name": "qwen3-8b-68496b54d4-pddrd.18e955a850bf0b95",
+    "namespace": "podserve",
+    "resourceVersion": "1795060136198831008",
+    "uid": "ed8b3f34-888f-4242-8f18-59de0cefbf6a"
+   },
+   "reason": "FailedScheduling",
+   "reportingComponent": "gke.io/optimize-utilization-scheduler",
+   "reportingInstance": "",
+   "source": {
+    "component": "gke.io/optimize-utilization-scheduler"
+   },
+   "type": "Warning"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 12,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:48:57Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-pddrd",
+    "namespace": "podserve",
+    "resourceVersion": "1795060107952607005",
+    "uid": "3323a4e4-7b1f-4555-be00-c71b7c2cb7f1"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:48:59Z",
+   "message": "0/3 nodes are available: 1 Insufficient nvidia.com/gpu, 1 node(s) didn't match Pod's node affinity/selector, 1 node(s) were unschedulable. no new claims to deallocate, preemption: 0/3 nodes are available: 3 Preemption is not helpful for scheduling.",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:48:57Z",
+    "name": "qwen3-8b-68496b54d4-pddrd.18e955af39b26aaa",
+    "namespace": "podserve",
+    "resourceVersion": "1795060139335615008",
+    "uid": "5200808f-9f2d-4eaa-b61e-bee14a04b7b4"
+   },
+   "reason": "FailedScheduling",
+   "reportingComponent": "gke.io/optimize-utilization-scheduler",
+   "reportingInstance": "",
+   "source": {
+    "component": "gke.io/optimize-utilization-scheduler"
+   },
+   "type": "Warning"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:49:13Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-pddrd",
+    "namespace": "podserve",
+    "resourceVersion": "1795060152308527005",
+    "uid": "3323a4e4-7b1f-4555-be00-c71b7c2cb7f1"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:49:13Z",
+   "message": "Successfully assigned podserve/qwen3-8b-68496b54d4-pddrd to gk3-podserve-nap-7823w91j-5d215719-6566",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:49:13Z",
+    "name": "qwen3-8b-68496b54d4-pddrd.18e955b30029ae4e",
+    "namespace": "podserve",
+    "resourceVersion": "1795060153784623002",
+    "uid": "595ac97b-8331-4196-b675-6326ef20fb92"
+   },
+   "reason": "Scheduled",
+   "reportingComponent": "gke.io/optimize-utilization-scheduler",
+   "reportingInstance": "",
+   "source": {
+    "component": "gke.io/optimize-utilization-scheduler"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:49:14Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-pddrd",
+    "namespace": "podserve",
+    "resourceVersion": "1795060153768431005",
+    "uid": "3323a4e4-7b1f-4555-be00-c71b7c2cb7f1"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:49:14Z",
+   "message": "Pulling image \"us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34\"",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:49:14Z",
+    "name": "qwen3-8b-68496b54d4-pddrd.18e955b32d050761",
+    "namespace": "podserve",
+    "resourceVersion": "1795060154558671011",
+    "uid": "379616c7-d780-4289-bef8-5179117deecc"
+   },
+   "reason": "Pulling",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-6566",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-6566"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:49:17Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-pddrd",
+    "namespace": "podserve",
+    "resourceVersion": "1795060153768431005",
+    "uid": "3323a4e4-7b1f-4555-be00-c71b7c2cb7f1"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:49:17Z",
+   "message": "Successfully pulled image \"us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34\" in 3.058s (3.058s including waiting). Image size: 9205781514 bytes.",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:49:17Z",
+    "name": "qwen3-8b-68496b54d4-pddrd.18e955b3e355f4d9",
+    "namespace": "podserve",
+    "resourceVersion": "1795060157618623019",
+    "uid": "ad5fef89-8ab4-46b5-a79a-06b74cd42bff"
+   },
+   "reason": "Pulled",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-6566",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-6566"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:49:17Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-pddrd",
+    "namespace": "podserve",
+    "resourceVersion": "1795060153768431005",
+    "uid": "3323a4e4-7b1f-4555-be00-c71b7c2cb7f1"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:49:17Z",
+   "message": "Container created",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:49:17Z",
+    "name": "qwen3-8b-68496b54d4-pddrd.18e955b3e80287d1",
+    "namespace": "podserve",
+    "resourceVersion": "1795060157703439024",
+    "uid": "fe952926-fa35-4b9a-bb69-0660826bec36"
+   },
+   "reason": "Created",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-6566",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-6566"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:49:17Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-pddrd",
+    "namespace": "podserve",
+    "resourceVersion": "1795060153768431005",
+    "uid": "3323a4e4-7b1f-4555-be00-c71b7c2cb7f1"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:49:17Z",
+   "message": "Container started",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:49:17Z",
+    "name": "qwen3-8b-68496b54d4-pddrd.18e955b3f20ef167",
+    "namespace": "podserve",
+    "resourceVersion": "1795060157863279009",
+    "uid": "2270fb45-8b8c-4583-bf24-083b9f85d61a"
+   },
+   "reason": "Started",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-6566",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-6566"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 25,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:49:24Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-pddrd",
+    "namespace": "podserve",
+    "resourceVersion": "1795060153768431005",
+    "uid": "3323a4e4-7b1f-4555-be00-c71b7c2cb7f1"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:53:24Z",
+   "message": "Startup probe failed: Get \"http://10.32.0.197:8000/health\": dial tcp 10.32.0.197:8000: connect: connection refused",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:49:24Z",
+    "name": "qwen3-8b-68496b54d4-pddrd.18e955b5693c0863",
+    "namespace": "podserve",
+    "resourceVersion": "1795060404151007004",
+    "uid": "af838c09-1f76-433d-8eaf-a2b2e71890f6"
+   },
+   "reason": "Unhealthy",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-6566",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-6566"
+   },
+   "type": "Warning"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:49:51Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-pddrd",
+    "namespace": "podserve",
+    "uid": "3323a4e4-7b1f-4555-be00-c71b7c2cb7f1"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:49:51Z",
+   "message": "Node scale up in zones us-central1-a associated with this pod failed: GCE out of resources. Pod is at risk of not being scheduled.",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:49:51Z",
+    "name": "qwen3-8b-68496b54d4-pddrd.18e955bbd1ecd092",
+    "namespace": "podserve",
+    "resourceVersion": "1795060191669007002",
+    "uid": "fc768457-0bc6-48a8-9786-29d9a062adee"
+   },
+   "reason": "FailedScaleUp",
+   "reportingComponent": "cluster-autoscaler",
+   "reportingInstance": "",
+   "source": {
+    "component": "cluster-autoscaler"
+   },
+   "type": "Warning"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:54:37Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-68496b54d4-pddrd",
+    "namespace": "podserve",
+    "resourceVersion": "1795060153768431005",
+    "uid": "3323a4e4-7b1f-4555-be00-c71b7c2cb7f1"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:54:37Z",
+   "message": "Stopping container vllm",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:54:37Z",
+    "name": "qwen3-8b-68496b54d4-pddrd.18e955fe7733f154",
+    "namespace": "podserve",
+    "resourceVersion": "1795060477940399014",
+    "uid": "25250342-231d-46c7-9be6-66bde362c15d"
+   },
+   "reason": "Killing",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-6566",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-6566"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:44:59Z",
+   "involvedObject": {
+    "apiVersion": "apps/v1",
+    "kind": "ReplicaSet",
+    "name": "qwen3-8b-68496b54d4",
+    "namespace": "podserve",
+    "resourceVersion": "1795059898634591010",
+    "uid": "84cce891-4711-4499-b7e9-9b92e113b6a8"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:44:59Z",
+   "message": "Created pod: qwen3-8b-68496b54d4-f2wt9",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:44:59Z",
+    "name": "qwen3-8b-68496b54d4.18e95577b0bd143b",
+    "namespace": "podserve",
+    "resourceVersion": "1795059899061231020",
+    "uid": "d0040f27-3b3c-40c7-925c-1661ec5133af"
+   },
+   "reason": "SuccessfulCreate",
+   "reportingComponent": "replicaset-controller",
+   "reportingInstance": "",
+   "source": {
+    "component": "replicaset-controller"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:47:42Z",
+   "involvedObject": {
+    "apiVersion": "apps/v1",
+    "kind": "ReplicaSet",
+    "name": "qwen3-8b-68496b54d4",
+    "namespace": "podserve",
+    "resourceVersion": "1795059899145807010",
+    "uid": "84cce891-4711-4499-b7e9-9b92e113b6a8"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:47:42Z",
+   "message": "Created pod: qwen3-8b-68496b54d4-pddrd",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:47:42Z",
+    "name": "qwen3-8b-68496b54d4.18e9559db6e1aee9",
+    "namespace": "podserve",
+    "resourceVersion": "1795060062569631000",
+    "uid": "aa5f6a31-eb71-40ae-b15c-170dbb8cecb4"
+   },
+   "reason": "SuccessfulCreate",
+   "reportingComponent": "replicaset-controller",
+   "reportingInstance": "",
+   "source": {
+    "component": "replicaset-controller"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:54:37Z",
+   "involvedObject": {
+    "apiVersion": "apps/v1",
+    "kind": "ReplicaSet",
+    "name": "qwen3-8b-68496b54d4",
+    "namespace": "podserve",
+    "resourceVersion": "1795060477812895010",
+    "uid": "84cce891-4711-4499-b7e9-9b92e113b6a8"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:54:37Z",
+   "message": "Deleted pod: qwen3-8b-68496b54d4-pddrd",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:54:37Z",
+    "name": "qwen3-8b-68496b54d4.18e955fe75e9e903",
+    "namespace": "podserve",
+    "resourceVersion": "1795060477888559018",
+    "uid": "86af1fc5-bc21-42a8-9c64-4d85c5779e77"
+   },
+   "reason": "SuccessfulDelete",
+   "reportingComponent": "replicaset-controller",
+   "reportingInstance": "",
+   "source": {
+    "component": "replicaset-controller"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:54:39Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "name": "qwen3-8b-745f4d9766-rtxmk",
+    "namespace": "podserve",
+    "resourceVersion": "1795060479398383009",
+    "uid": "5d12aaf2-77a3-47c5-8aec-6845ee7f3f38"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:54:39Z",
+   "message": "Successfully assigned podserve/qwen3-8b-745f4d9766-rtxmk to gk3-podserve-nap-7823w91j-5d215719-6566",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:54:39Z",
+    "name": "qwen3-8b-745f4d9766-rtxmk.18e955fed4acf036",
+    "namespace": "podserve",
+    "resourceVersion": "1795060479475391022",
+    "uid": "56b1412d-7bb2-4706-a3d2-7f5f727a0301"
+   },
+   "reason": "Scheduled",
+   "reportingComponent": "gke.io/optimize-utilization-scheduler",
+   "reportingInstance": "",
+   "source": {
+    "component": "gke.io/optimize-utilization-scheduler"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 7,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:54:40Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-745f4d9766-rtxmk",
+    "namespace": "podserve",
+    "resourceVersion": "1795060479454351009",
+    "uid": "5d12aaf2-77a3-47c5-8aec-6845ee7f3f38"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:02:23Z",
+   "message": "Container image \"us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:befccf0e7e4089aa23926bb6f887a85c0d46c2a99e6de5c5ffdf5cb7957c5b34\" already present on machine and can be accessed by the pod",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:54:40Z",
+    "name": "qwen3-8b-745f4d9766-rtxmk.18e955ff00aa911e",
+    "namespace": "podserve",
+    "resourceVersion": "1795060943661247008",
+    "uid": "f46ed9a6-51aa-4fee-ac81-84f412d491e9"
+   },
+   "reason": "Pulled",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-6566",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-6566"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 7,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:54:40Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-745f4d9766-rtxmk",
+    "namespace": "podserve",
+    "resourceVersion": "1795060479454351009",
+    "uid": "5d12aaf2-77a3-47c5-8aec-6845ee7f3f38"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:02:23Z",
+   "message": "Container created",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:54:40Z",
+    "name": "qwen3-8b-745f4d9766-rtxmk.18e955ff040b4c49",
+    "namespace": "podserve",
+    "resourceVersion": "1795060943699503018",
+    "uid": "279bf24b-e89d-48f2-8c99-cf3977d09c6f"
+   },
+   "reason": "Created",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-6566",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-6566"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 7,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:54:40Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-745f4d9766-rtxmk",
+    "namespace": "podserve",
+    "resourceVersion": "1795060479454351009",
+    "uid": "5d12aaf2-77a3-47c5-8aec-6845ee7f3f38"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:02:23Z",
+   "message": "Container started",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:54:40Z",
+    "name": "qwen3-8b-745f4d9766-rtxmk.18e955ff0ce9a9e5",
+    "namespace": "podserve",
+    "resourceVersion": "1795060943814239024",
+    "uid": "92058711-1ac5-4ef6-ab00-fb1b4a48df39"
+   },
+   "reason": "Started",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-6566",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-6566"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 14,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:54:49Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-745f4d9766-rtxmk",
+    "namespace": "podserve",
+    "resourceVersion": "1795060479454351009",
+    "uid": "5d12aaf2-77a3-47c5-8aec-6845ee7f3f38"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:02:29Z",
+   "message": "Startup probe failed: Get \"http://10.32.0.198:8000/health\": dial tcp 10.32.0.198:8000: connect: connection refused",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:54:49Z",
+    "name": "qwen3-8b-745f4d9766-rtxmk.18e956013df5f9ab",
+    "namespace": "podserve",
+    "resourceVersion": "1795060949843615002",
+    "uid": "fdcb3cee-8157-4d8d-a191-3ff812dae4e1"
+   },
+   "reason": "Unhealthy",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-6566",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-6566"
+   },
+   "type": "Warning"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 12,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:55:26Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "fieldPath": "spec.containers{vllm}",
+    "kind": "Pod",
+    "name": "qwen3-8b-745f4d9766-rtxmk",
+    "namespace": "podserve",
+    "resourceVersion": "1795060479454351009",
+    "uid": "5d12aaf2-77a3-47c5-8aec-6845ee7f3f38"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:01:04Z",
+   "message": "Back-off restarting failed container vllm in pod qwen3-8b-745f4d9766-rtxmk_podserve(5d12aaf2-77a3-47c5-8aec-6845ee7f3f38)",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:55:26Z",
+    "name": "qwen3-8b-745f4d9766-rtxmk.18e95609d16b9028",
+    "namespace": "podserve",
+    "resourceVersion": "1795060864658703022",
+    "uid": "e847b0bd-355b-461c-96e6-0e8bd438008a"
+   },
+   "reason": "BackOff",
+   "reportingComponent": "kubelet",
+   "reportingInstance": "gk3-podserve-nap-7823w91j-5d215719-6566",
+   "source": {
+    "component": "kubelet",
+    "host": "gk3-podserve-nap-7823w91j-5d215719-6566"
+   },
+   "type": "Warning"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:54:39Z",
+   "involvedObject": {
+    "apiVersion": "apps/v1",
+    "kind": "ReplicaSet",
+    "name": "qwen3-8b-745f4d9766",
+    "namespace": "podserve",
+    "resourceVersion": "1795060479162911019",
+    "uid": "c03cc8db-23d5-4e2b-bc32-e6483b78484b"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:54:39Z",
+   "message": "Created pod: qwen3-8b-745f4d9766-rtxmk",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:54:39Z",
+    "name": "qwen3-8b-745f4d9766.18e955fed1d0e894",
+    "namespace": "podserve",
+    "resourceVersion": "1795060479446879010",
+    "uid": "aa6e9c16-1144-4df1-8bcf-d756c6dfeef2"
+   },
+   "reason": "SuccessfulCreate",
+   "reportingComponent": "replicaset-controller",
+   "reportingInstance": "",
+   "source": {
+    "component": "replicaset-controller"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:44:58Z",
+   "involvedObject": {
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "name": "qwen3-8b",
+    "namespace": "podserve",
+    "resourceVersion": "1795059898589919016",
+    "uid": "e891f6ff-ec2f-4fbb-b8ea-fc42abf0e071"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:44:58Z",
+   "message": "Scaled up replica set qwen3-8b-68496b54d4 from 0 to 1",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:44:58Z",
+    "name": "qwen3-8b.18e955779904db49",
+    "namespace": "podserve",
+    "resourceVersion": "1795059898661263018",
+    "uid": "3fbee906-81d8-4e75-b6e7-0aa07ce01143"
+   },
+   "reason": "ScalingReplicaSet",
+   "reportingComponent": "deployment-controller",
+   "reportingInstance": "",
+   "source": {
+    "component": "deployment-controller"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:44:58Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Service",
+    "name": "qwen3-8b",
+    "namespace": "podserve",
+    "resourceVersion": "1795059898815535023",
+    "uid": "364443cc-068c-4c17-83dd-55ac74c70792"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:44:58Z",
+   "message": "podserve/qwen3-8b",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:44:58Z",
+    "name": "qwen3-8b.18e95577a4c4c126",
+    "namespace": "podserve",
+    "resourceVersion": "1795059898955839015",
+    "uid": "3e37dea8-afb9-46fb-9fe6-e71de690ffa3"
+   },
+   "reason": "ADD",
+   "reportingComponent": "sc-gateway-controller",
+   "reportingInstance": "",
+   "source": {
+    "component": "sc-gateway-controller"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 10,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:44:59Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Service",
+    "name": "qwen3-8b",
+    "namespace": "podserve",
+    "resourceVersion": "1795059898815535023",
+    "uid": "364443cc-068c-4c17-83dd-55ac74c70792"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:02:56Z",
+   "message": "DNS records updated",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:44:59Z",
+    "name": "qwen3-8b.18e95577e27a2e5a",
+    "namespace": "podserve",
+    "resourceVersion": "1795060976942383000",
+    "uid": "52d8035b-7807-4665-9a6d-c9d8e874dd45"
+   },
+   "reason": "DNSRecordProvisioningSucceeded",
+   "reportingComponent": "",
+   "reportingInstance": "",
+   "source": {
+    "component": "clouddns-controller"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:54:37Z",
+   "involvedObject": {
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "name": "qwen3-8b",
+    "namespace": "podserve",
+    "resourceVersion": "1795060477753119016",
+    "uid": "e891f6ff-ec2f-4fbb-b8ea-fc42abf0e071"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:54:37Z",
+   "message": "Scaled down replica set qwen3-8b-68496b54d4 from 1 to 0",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:54:37Z",
+    "name": "qwen3-8b.18e955fe72b8c9a5",
+    "namespace": "podserve",
+    "resourceVersion": "1795060477857999011",
+    "uid": "f9ad90b3-33d3-4302-937e-e36f9996b592"
+   },
+   "reason": "ScalingReplicaSet",
+   "reportingComponent": "deployment-controller",
+   "reportingInstance": "",
+   "source": {
+    "component": "deployment-controller"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T03:54:39Z",
+   "involvedObject": {
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "name": "qwen3-8b",
+    "namespace": "podserve",
+    "resourceVersion": "1795060478015887016",
+    "uid": "e891f6ff-ec2f-4fbb-b8ea-fc42abf0e071"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T03:54:39Z",
+   "message": "Scaled up replica set qwen3-8b-745f4d9766 from 0 to 1",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T03:54:39Z",
+    "name": "qwen3-8b.18e955fec33e4b35",
+    "namespace": "podserve",
+    "resourceVersion": "1795060479180911005",
+    "uid": "456bed0e-84c9-421a-8101-655ea557d596"
+   },
+   "reason": "ScalingReplicaSet",
+   "reportingComponent": "deployment-controller",
+   "reportingInstance": "",
+   "source": {
+    "component": "deployment-controller"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T04:02:55Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Service",
+    "name": "qwen3-8b",
+    "namespace": "podserve",
+    "resourceVersion": "1795060975962959023",
+    "uid": "364443cc-068c-4c17-83dd-55ac74c70792"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:02:55Z",
+   "message": "podserve/qwen3-8b",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T04:02:56Z",
+    "name": "qwen3-8b.18e956726f5cc419",
+    "namespace": "podserve",
+    "resourceVersion": "1795060976136703014",
+    "uid": "b764c6c4-d7de-448c-a561-d0e05055644c"
+   },
+   "reason": "DELETE",
+   "reportingComponent": "sc-gateway-controller",
+   "reportingInstance": "",
+   "source": {
+    "component": "sc-gateway-controller"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T04:03:34Z",
+   "involvedObject": {
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "name": "qwen3-8b",
+    "namespace": "podserve",
+    "resourceVersion": "1795061014554783016",
+    "uid": "d98a7bc5-e4cf-4988-aac6-7d3a9859cf84"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:03:34Z",
+   "message": "Scaled up replica set qwen3-8b-66c4d696c8 from 0 to 1",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T04:03:34Z",
+    "name": "qwen3-8b.18e9567b6d69e2d4",
+    "namespace": "podserve",
+    "resourceVersion": "1795061014614895003",
+    "uid": "98296132-e5be-4a8a-872f-d04f9c699a8b"
+   },
+   "reason": "ScalingReplicaSet",
+   "reportingComponent": "deployment-controller",
+   "reportingInstance": "",
+   "source": {
+    "component": "deployment-controller"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 1,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T04:03:34Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Service",
+    "name": "qwen3-8b",
+    "namespace": "podserve",
+    "resourceVersion": "1795061014744143023",
+    "uid": "2725d010-675e-4660-adb0-8aaeca040e08"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:03:34Z",
+   "message": "podserve/qwen3-8b",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T04:03:34Z",
+    "name": "qwen3-8b.18e9567b773cd4d0",
+    "namespace": "podserve",
+    "resourceVersion": "1795061014860479008",
+    "uid": "686f1885-c443-49eb-a714-77e13387e8d3"
+   },
+   "reason": "ADD",
+   "reportingComponent": "sc-gateway-controller",
+   "reportingInstance": "",
+   "source": {
+    "component": "sc-gateway-controller"
+   },
+   "type": "Normal"
+  },
+  {
+   "apiVersion": "v1",
+   "count": 5,
+   "eventTime": null,
+   "firstTimestamp": "2026-11-19T04:03:35Z",
+   "involvedObject": {
+    "apiVersion": "v1",
+    "kind": "Service",
+    "name": "qwen3-8b",
+    "namespace": "podserve",
+    "resourceVersion": "1795061014744143023",
+    "uid": "2725d010-675e-4660-adb0-8aaeca040e08"
+   },
+   "kind": "Event",
+   "lastTimestamp": "2026-11-19T04:03:35Z",
+   "message": "DNS records updated",
+   "metadata": {
+    "creationTimestamp": "2026-11-19T04:03:35Z",
+    "name": "qwen3-8b.18e9567ba8e9635e",
+    "namespace": "podserve",
+    "resourceVersion": "1795061015748143002",
+    "uid": "b2044223-31ff-4f98-8520-2246f3fe742d"
+   },
+   "reason": "DNSRecordProvisioningSucceeded",
+   "reportingComponent": "",
+   "reportingInstance": "",
+   "source": {
+    "component": "clouddns-controller"
+   },
+   "type": "Normal"
+  }
+ ],
+ "kind": "List"
+}

@@ -19,6 +19,12 @@ Core document (SYSTEM.md). It fixes the names, layouts and interfaces that tie t
 All of podserve's objects live in the `podserve` namespace. `deploy` refuses any other. Terraform's
 Workload Identity grants name these service accounts, so they are constants, not settings.
 
+**The model bucket's name** is `<NAME>-models-<HASH>`: the platform name (`podserve` by default),
+then the first 12 hex characters of `sha256(<PROJECT_ID>)` (D-031). vLLM shows its `--model` path,
+`gs://<BUCKET>/…`, as `root` in `/v1/models`, so the name must not reveal the project ID. The hash
+is fixed per project, so a re-apply keeps the bucket. For `my-project` it is
+`podserve-models-1c7cd944c28c`.
+
 ## The `podserve-platform` ConfigMap
 
 Written by `podserve init`. Every key is required.
@@ -27,7 +33,7 @@ Written by `podserve init`. Every key is required.
 |---|---|---|
 | `project` | `my-project` | Terraform output `project_id` |
 | `region` | `us-central1` | Terraform output `region` |
-| `bucket` | `my-project-podserve-models` | Terraform output `model_bucket` |
+| `bucket` | `podserve-models-1c7cd944c28c` | Terraform output `model_bucket` (below) |
 | `vllmImage` | `us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:befccf0e…` | Terraform output `dockerhub_mirror` + the digest pinned in `pkg/platform` |
 | `fetchImage` | `us-central1-docker.pkg.dev/my-project/podserve/fetch@sha256:…` | built by `podserve init` (D-023), or `--fetch-image` |
 | `hfTokenSecret` | `projects/my-project/secrets/podserve-hf-token` | Terraform output `hf_token_secret` (no version) |

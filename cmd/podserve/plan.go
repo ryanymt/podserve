@@ -6,7 +6,7 @@ package main
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/podserve/podserve/pkg/profile"
+	"github.com/ryanymt/podserve/pkg/profile"
 )
 
 func planCmd(d deps) *cobra.Command {

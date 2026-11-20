@@ -3,7 +3,11 @@
 # user adds the token out of band (D-014), so no token ever lands in state or logs.
 
 resource "google_storage_bucket" "models" {
-  name          = "${var.project_id}-${var.name}-models"
+  # D-031: vLLM shows its --model path, gs://BUCKET/..., as "root" in /v1/models, so every API client
+  # can read the bucket name. It must not reveal the project ID: it is the platform name, "models" and
+  # the first 12 hex characters of sha256(project_id) — fixed per project, so a re-apply keeps the
+  # bucket (e.g. podserve-models-1c7cd944c28c for my-project).
+  name          = "${var.name}-models-${substr(sha256(var.project_id), 0, 12)}"
   location      = var.region
   force_destroy = true # AC1: terraform destroy removes the weights too
 

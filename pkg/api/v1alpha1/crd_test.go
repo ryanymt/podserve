@@ -13,8 +13,8 @@ import (
 	apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"sigs.k8s.io/yaml"
 
-	"github.com/podserve/podserve/config/crd"
-	"github.com/podserve/podserve/pkg/api/v1alpha1"
+	"github.com/ryanymt/podserve/config/crd"
+	"github.com/ryanymt/podserve/pkg/api/v1alpha1"
 )
 
 // jsonFields lists the JSON paths of a struct type's exported fields, recursively (structs and

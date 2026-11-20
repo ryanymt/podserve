@@ -14,9 +14,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/podserve/podserve/pkg/api/v1alpha1"
-	"github.com/podserve/podserve/pkg/kube"
-	"github.com/podserve/podserve/pkg/platform"
+	"github.com/ryanymt/podserve/pkg/api/v1alpha1"
+	"github.com/ryanymt/podserve/pkg/kube"
+	"github.com/ryanymt/podserve/pkg/platform"
 )
 
 // ---- list -----------------------------------------------------------------------------------------

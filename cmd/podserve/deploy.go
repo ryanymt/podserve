@@ -15,12 +15,12 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/podserve/podserve/pkg/api/v1alpha1"
-	"github.com/podserve/podserve/pkg/hf"
-	"github.com/podserve/podserve/pkg/kube"
-	"github.com/podserve/podserve/pkg/platform"
-	"github.com/podserve/podserve/pkg/profile"
-	"github.com/podserve/podserve/pkg/render"
+	"github.com/ryanymt/podserve/pkg/api/v1alpha1"
+	"github.com/ryanymt/podserve/pkg/hf"
+	"github.com/ryanymt/podserve/pkg/kube"
+	"github.com/ryanymt/podserve/pkg/platform"
+	"github.com/ryanymt/podserve/pkg/profile"
+	"github.com/ryanymt/podserve/pkg/render"
 )
 
 // specFlags are deploy's flags that map to spec fields; they cannot be combined with -f.
@@ -171,6 +171,17 @@ func runDeploy(cmd *cobra.Command, args []string, d deps, o *deployOpts) error {
 	if err != nil {
 		return err
 	}
+	// A waiting reason prints each time it changes, on its own line under the stage current at the
+	// time, the message cut to 200 characters (docs/design/cli.md, deploy "Waiting reasons", D-026).
+	kc.Options.Reason = func(diag kube.Diagnosis) {
+		stageLine(d.Stdout, start, d, string(diag.Stage), string(diag.Reason)+": "+cut(diag.Message))
+	}
+	// The reader a crash loop's failure reads the container's previous log through (D-029). It is
+	// built from the same kubeconfig context; failing to build it must not fail the deploy, only
+	// cost the log lines.
+	if lr, lrErr := d.NewLogReader(); lrErr == nil && lr != nil {
+		kc.Logs = lr
+	}
 
 	data, err := kc.PlatformData(ctx)
 	if err != nil {
@@ -241,7 +252,7 @@ func runDeploy(cmd *cobra.Command, args []string, d deps, o *deployOpts) error {
 		return failf(exitUnexpected, "%s", err)
 	}
 	stageLine(d.Stdout, start, d, "fetch", fmt.Sprintf("caching %s@%s into gs://%s/%s...",
-		src.repo, shortSHA(m.Revision), plat.Bucket, platform.ModelPrefix(src.repo, shortSHA(m.Revision))))
+		src.repo, shortSHA(m.Revision), plat.Bucket, platform.ModelPrefix(src.repo, m.Revision)))
 
 	job, err := render.FetchJob(in)
 	if err != nil {
@@ -249,7 +260,7 @@ func runDeploy(cmd *cobra.Command, args []string, d deps, o *deployOpts) error {
 	}
 	outcome, err := kc.EnsureFetchJob(ctx, job)
 	if err != nil {
-		return fetchFailed(ctx, kc, ms, src.repo, m, *res, plat, err)
+		return fetchFailed(ctx, kc, d, ms, src.repo, m, *res, plat, err)
 	}
 	if outcome == kube.FetchCopied {
 		stageLine(d.Stdout, start, d, "fetch", "done")
@@ -269,7 +280,7 @@ func runDeploy(cmd *cobra.Command, args []string, d deps, o *deployOpts) error {
 	}
 
 	if err := kc.WaitReady(ctx, ms.Name); err != nil {
-		return waitFailed(ctx, kc, ms, m, *res, err)
+		return waitFailed(ctx, kc, d, ms, m, *res, err)
 	}
 
 	endpoint := fmt.Sprintf("http://%s.podserve.svc:%d/v1", ms.Name, platform.ServingPort)
@@ -294,12 +305,12 @@ func toUnstructuredObj(obj runtime.Object) *unstructured.Unstructured {
 }
 
 // fetchFailed writes Failed and maps a fetch Job failure to its exit code and hint (docs/design/cli.md).
-func fetchFailed(ctx context.Context, kc *kube.Client, ms *v1alpha1.ModelService, repo string,
+func fetchFailed(ctx context.Context, kc *kube.Client, d deps, ms *v1alpha1.ModelService, repo string,
 	m profile.Model, res profile.Result, plat platform.Platform, err error,
 ) error {
 	var fe *kube.FetchError
 	if !errors.As(err, &fe) {
-		return waitFailed(ctx, kc, ms, m, res, err)
+		return waitFailed(ctx, kc, d, ms, m, res, err)
 	}
 	message := fmt.Sprintf("fetching %s failed: %s", repo, fe.Code)
 	_ = kc.UpdateStatus(ctx, ms.Name, failedStatus(m, res, message))
@@ -310,18 +321,69 @@ func fetchFailed(ctx context.Context, kc *kube.Client, ms *v1alpha1.ModelService
 	return failLines(exitFetchFailed, lines...)
 }
 
-// waitFailed writes Failed and maps a wait failure to its exit code (docs/design/cli.md).
-func waitFailed(ctx context.Context, kc *kube.Client, ms *v1alpha1.ModelService,
+// waitFailed writes Failed and maps a wait failure to its exit code (docs/design/cli.md): a model
+// that can't start exits 7 with its reason (startFailed), a timeout exits 5 naming the last reason.
+// Either way the model is stopped first (D-027), so Autopilot releases its GPU node while the record
+// and the Service stay; a stop that fails is reported instead, and the exit code stands.
+func waitFailed(ctx context.Context, kc *kube.Client, d deps, ms *v1alpha1.ModelService,
 	m profile.Model, res profile.Result, err error,
 ) error {
+	var fe *kube.FailedError
+	if errors.As(err, &fe) {
+		return startFailed(ctx, kc, d, ms, m, res, fe)
+	}
 	var te *kube.TimeoutError
 	if !errors.As(err, &te) {
 		return failf(exitUnexpected, "%s", err)
 	}
 	message := fmt.Sprintf("not ready after %s (stage: %s)", te.After, te.Stage)
+	if te.Reason != "" {
+		message += fmt.Sprintf("; last reason: %s: %s", te.Reason, te.Message)
+	}
 	_ = kc.UpdateStatus(ctx, ms.Name, failedStatus(m, res, message))
-	return failf(exitTimeout, "%s not ready after %s (stage: %s); see: kubectl -n podserve logs deploy/%s",
-		ms.Name, te.After, te.Stage, ms.Name)
+	stopErr := kc.Stop(ctx, ms.Name)
+	return failLines(exitTimeout, ms.Name+" "+message,
+		stoppedLine(ms.Name, stopErr, "see: podserve status "+ms.Name))
+}
+
+// startFailed reports a model that can't start (docs/design/cli.md, deploy "A model that can't
+// start", D-028): it writes Failed with the reason, stops the model so its GPU node is released,
+// and exits 7. The lines print here rather than through failLines because only the first and last
+// of them carry the "podserve: " prefix; the ones in between are indented.
+func startFailed(ctx context.Context, kc *kube.Client, d deps, ms *v1alpha1.ModelService,
+	m profile.Model, res profile.Result, fe *kube.FailedError,
+) error {
+	diag := fe.Diagnosis
+	message := fmt.Sprintf("%s: %s", diag.Reason, diag.Message)
+	_ = kc.UpdateStatus(ctx, ms.Name, failedStatus(m, res, message))
+	stopErr := kc.Stop(ctx, ms.Name)
+
+	fmt.Fprintf(d.Stderr, "podserve: %s failed to start: %s\n", ms.Name, message)
+	if diag.Last != nil {
+		fmt.Fprintf(d.Stderr, "  last run: exit code %d (%s)\n", diag.Last.ExitCode, diag.Last.Reason)
+	}
+	switch {
+	case len(fe.Log) > 0:
+		fmt.Fprint(d.Stderr, "  last lines of the vllm container's log:\n")
+		for _, l := range fe.Log {
+			fmt.Fprintf(d.Stderr, "    %s\n", l)
+		}
+	case fe.LogErr != nil:
+		fmt.Fprintf(d.Stderr, "  vllm container's log unavailable: %s\n", fe.LogErr)
+	}
+	fmt.Fprintf(d.Stderr, "podserve: %s\n", stoppedLine(ms.Name, stopErr,
+		"fix it and run podserve deploy again, or podserve delete "+ms.Name))
+	return &exitError{code: exitFailedToStart}
+}
+
+// stoppedLine is the last line of a failed or timed-out deploy: the model was stopped so its GPU is
+// released (D-027), or, when the stop itself failed, how to finish the job instead. `then` says what
+// the user does next, which differs between a failure and a timeout.
+func stoppedLine(name string, stopErr error, then string) string {
+	if stopErr != nil {
+		return fmt.Sprintf("could not stop %s: %s; run podserve delete %s", name, stopErr, name)
+	}
+	return fmt.Sprintf("stopped %s (replicas 0) so its GPU is released; %s", name, then)
 }
 
 // deployProgress builds kube.Options.Progress: the stage lines of WaitReady, printed as each stage

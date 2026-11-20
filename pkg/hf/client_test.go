@@ -15,9 +15,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/podserve/podserve/internal/hffixture"
-	"github.com/podserve/podserve/pkg/hf"
-	"github.com/podserve/podserve/pkg/platform"
+	"github.com/ryanymt/podserve/internal/hffixture"
+	"github.com/ryanymt/podserve/pkg/hf"
+	"github.com/ryanymt/podserve/pkg/platform"
 )
 
 type fakeHub struct {

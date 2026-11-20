@@ -3,7 +3,9 @@ package v1alpha1
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
+	"unicode"
 )
 
 // FieldError is one invalid field. Path uses the CRD's JSON path form, e.g. "spec.model.source".
@@ -32,14 +34,28 @@ var (
 // gpuTypes is spec.accelerator.type's enum, from catalog/gpus.yaml plus "auto".
 var gpuTypes = []string{"auto", "nvidia-l4", "nvidia-tesla-a100", "nvidia-a100-80gb", "nvidia-h100-80gb"}
 
-// ownedArgs are the `vllm serve` arguments podserve sets itself; extraArgs may not set them.
+// ownedArgs are the `vllm serve` arguments podserve sets itself; extraArgs may not set them, in
+// any form vLLM's parser accepts (docs/design/modelservice.md, "Validation beyond the schema",
+// rule 4).
 var ownedArgs = map[string]bool{
 	"--model": true, "--served-model-name": true,
 	"--tensor-parallel-size": true, "-tp": true,
 	"--max-model-len": true, "--gpu-memory-utilization": true, "--dtype": true,
 	"--load-format": true, "--model-loader-extra-config": true,
-	"--port": true, "--host": true, "--download-dir": true,
+	"--port": true, "--host": true, "--download-dir": true, "--config": true,
 }
+
+// ownedList is ownedArgs sorted. The abbreviation search wants the shortest owned argument a
+// token is a prefix of, alphabetically first on a tie; scanning in order and keeping a strictly
+// shorter match does exactly that.
+var ownedList = func() []string {
+	list := make([]string, 0, len(ownedArgs))
+	for arg := range ownedArgs {
+		list = append(list, arg)
+	}
+	sort.Strings(list)
+	return list
+}()
 
 // Validate checks a defaulted ModelService against docs/design/modelservice.md and returns every
 // problem found, in field order. nil means valid.
@@ -93,11 +109,13 @@ func Validate(ms *ModelService) []FieldError {
 		errs = append(errs, FieldError{Path: "spec.engine.extraArgs", Message: "at most 32 items"})
 	} else {
 		for i, arg := range args {
-			if token := firstToken(arg); ownedArgs[token] {
-				errs = append(errs, FieldError{
-					Path:    fmt.Sprintf("spec.engine.extraArgs[%d]", i),
-					Message: "sets " + token + ", which podserve owns",
-				})
+			if token := firstToken(arg); token != "" {
+				if msg := ownedMessage(token); msg != "" {
+					errs = append(errs, FieldError{
+						Path:    fmt.Sprintf("spec.engine.extraArgs[%d]", i),
+						Message: msg,
+					})
+				}
 			}
 		}
 	}
@@ -121,11 +139,48 @@ func gpuTypeAllowed(t string) bool {
 	return false
 }
 
-// firstToken is an extraArg's first token: the text up to any "=", trimmed.
+// firstToken is an extraArg's flag token, reduced the way docs/design/modelservice.md
+// ("Validation beyond the schema", rule 4) reduces it: trimmed, then cut at the first "=", "." or
+// whitespace character, whichever comes first. "" means the item is a value (it doesn't start
+// with "-"), which is never refused.
 func firstToken(arg string) string {
 	token := strings.TrimSpace(arg)
-	if eq := strings.IndexByte(token, '='); eq >= 0 {
-		token = strings.TrimSpace(token[:eq])
+	if !strings.HasPrefix(token, "-") {
+		return ""
+	}
+	if end := strings.IndexFunc(token, func(r rune) bool {
+		return r == '=' || r == '.' || unicode.IsSpace(r)
+	}); end >= 0 {
+		token = token[:end]
 	}
 	return token
+}
+
+// ownedMessage is the FieldError message for an extraArg's flag token: "sets <TOKEN>, ..." when
+// the token is an owned argument ("_" counts as "-" in "--" tokens, which vLLM's parser converts;
+// <TOKEN> is the token as written), "abbreviates <ARG>, ..." when it is a proper prefix of one
+// (argparse accepts abbreviations; <ARG> is the shortest owned argument it is a prefix of,
+// alphabetically first on a tie), and "" when the token is allowed. "-" and "--" alone are never
+// refused.
+func ownedMessage(token string) string {
+	if token == "-" || token == "--" {
+		return ""
+	}
+	norm := token
+	if strings.HasPrefix(token, "--") {
+		norm = strings.ReplaceAll(norm, "_", "-")
+	}
+	if ownedArgs[norm] {
+		return "sets " + token + ", which podserve owns"
+	}
+	by := ""
+	for _, arg := range ownedList {
+		if strings.HasPrefix(arg, norm) && (by == "" || len(arg) < len(by)) {
+			by = arg
+		}
+	}
+	if by == "" {
+		return ""
+	}
+	return "abbreviates " + by + ", which podserve owns"
 }

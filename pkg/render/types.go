@@ -8,9 +8,9 @@ package render
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/podserve/podserve/pkg/api/v1alpha1"
-	"github.com/podserve/podserve/pkg/platform"
-	"github.com/podserve/podserve/pkg/profile"
+	"github.com/ryanymt/podserve/pkg/api/v1alpha1"
+	"github.com/ryanymt/podserve/pkg/platform"
+	"github.com/ryanymt/podserve/pkg/profile"
 )
 
 // Input is everything one ModelService renders from.

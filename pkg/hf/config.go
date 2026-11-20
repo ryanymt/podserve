@@ -7,7 +7,7 @@ package hf
 import (
 	"encoding/json"
 
-	"github.com/podserve/podserve/pkg/profile"
+	"github.com/ryanymt/podserve/pkg/profile"
 )
 
 // ParseConfig maps a config.json to profile.Config. Numbers are JSON numbers.

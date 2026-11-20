@@ -10,9 +10,9 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/podserve/podserve/pkg/api/v1alpha1"
-	"github.com/podserve/podserve/pkg/kube"
-	"github.com/podserve/podserve/pkg/platform"
+	"github.com/ryanymt/podserve/pkg/api/v1alpha1"
+	"github.com/ryanymt/podserve/pkg/kube"
+	"github.com/ryanymt/podserve/pkg/platform"
 )
 
 func TestDeleteTakesTheFetchJobsPodsWithIt(t *testing.T) {

@@ -13,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 
-	"github.com/podserve/podserve/pkg/platform"
+	"github.com/ryanymt/podserve/pkg/platform"
 )
 
 // fetchEvent is the fetch Job's final event, written as one JSON line to the pod's termination log
@@ -94,8 +94,15 @@ func (c *Client) EnsureFetchJob(ctx context.Context, job *batchv1.Job) (FetchOut
 	start := clk.Now()
 	for {
 		got, err := c.jobs().Get(ctx, name, metav1.GetOptions{})
-		if err != nil {
+		if err != nil && !transient(err) {
 			return "", err
+		}
+		if err != nil { // the API server was briefly unavailable: keep waiting, until the timeout
+			if clk.Now().Sub(start) >= timeout {
+				return "", &TimeoutError{Stage: StageFetch, After: timeout}
+			}
+			clk.Sleep(poll)
+			continue
 		}
 		switch phaseOfJob(got) {
 		case jobComplete:

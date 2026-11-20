@@ -8,6 +8,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 var (
@@ -178,5 +179,120 @@ func TestAutoReadyAndJobs(t *testing.T) {
 	pods, _ = c.Resource(gvrPods).Namespace("podserve").List(context.Background(), metav1.ListOptions{LabelSelector: "job-name=podserve-fetch-z"})
 	if len(pods.Items) != 0 {
 		t.Errorf("a Job deleted with Background propagation must take its pod with it")
+	}
+}
+
+// D-027's stop: a JSON merge patch on spec.replicas changes nothing else (the template and selector
+// survive, unlike a partial server-side apply), removes the pods, and the next forced apply of the
+// full Deployment brings them back.
+func TestMergePatchStopKeepsTheTemplate(t *testing.T) {
+	c := New()
+	c.AutoReady = true
+	dep := obj("apps/v1", "Deployment", "m", map[string]any{"replicas": int64(1),
+		"selector": map[string]any{"matchLabels": map[string]any{"podserve.dev/model": "m"}},
+		"template": map[string]any{"metadata": map[string]any{"labels": map[string]any{"podserve.dev/model": "m"}}}})
+	apply(t, c, depGVR, dep)
+	gen := func() int64 { d, _ := c.Get(depGVR, "podserve", "m"); return d.GetGeneration() }
+	before := gen()
+
+	if _, err := c.Resource(depGVR).Namespace("podserve").Patch(context.Background(), "m", types.MergePatchType,
+		[]byte(`{"spec":{"replicas":0}}`), metav1.PatchOptions{}); err != nil {
+		t.Fatal(err)
+	}
+	got, _ := c.Get(depGVR, "podserve", "m")
+	if r, _, _ := unstructured.NestedInt64(got.Object, "spec", "replicas"); r != 0 {
+		t.Errorf("replicas %d after the stop", r)
+	}
+	if _, found, _ := unstructured.NestedMap(got.Object, "spec", "template"); !found {
+		t.Error("the merge patch dropped spec.template")
+	}
+	if _, found, _ := unstructured.NestedMap(got.Object, "spec", "selector"); !found {
+		t.Error("the merge patch dropped spec.selector")
+	}
+	if got.GetGeneration() != before+1 {
+		t.Errorf("generation %d, want %d", got.GetGeneration(), before+1)
+	}
+	pods, _ := c.Resource(gvrPods).Namespace("podserve").List(context.Background(), metav1.ListOptions{})
+	if len(pods.Items) != 0 {
+		t.Errorf("%d pods left after scaling to zero", len(pods.Items))
+	}
+
+	apply(t, c, depGVR, dep) // the next podserve deploy
+	pods, _ = c.Resource(gvrPods).Namespace("podserve").List(context.Background(), metav1.ListOptions{})
+	if len(pods.Items) != 1 {
+		t.Errorf("%d pods after the re-apply, want 1", len(pods.Items))
+	}
+}
+
+// Pods belong to a ReplicaSet per pod template, as on GKE; a new template replaces the old pods.
+func TestReplicaSetsFollowTheTemplate(t *testing.T) {
+	c := New()
+	c.AutoReady = true
+	mk := func(arg string) *unstructured.Unstructured {
+		return obj("apps/v1", "Deployment", "m", map[string]any{"replicas": int64(1),
+			"template": map[string]any{
+				"metadata": map[string]any{"labels": map[string]any{"podserve.dev/model": "m"}},
+				"spec":     map[string]any{"containers": []any{map[string]any{"name": "vllm", "args": []any{arg}}}}}})
+	}
+	apply(t, c, depGVR, mk("--a"))
+	apply(t, c, depGVR, mk("--b"))
+	pods, _ := c.Resource(gvrPods).Namespace("podserve").List(context.Background(), metav1.ListOptions{})
+	if len(pods.Items) != 1 {
+		t.Fatalf("%d pods, want 1 (the old template's pod goes)", len(pods.Items))
+	}
+	rss, _ := c.Resource(gvrReplicaSets).Namespace("podserve").List(context.Background(), metav1.ListOptions{})
+	if len(rss.Items) != 2 {
+		t.Fatalf("%d ReplicaSets, want 2", len(rss.Items))
+	}
+	newest := ""
+	for _, rs := range rss.Items {
+		if rs.GetAnnotations()["deployment.kubernetes.io/revision"] == "2" {
+			newest = rs.GetLabels()["pod-template-hash"]
+		}
+	}
+	if h := pods.Items[0].GetLabels()["pod-template-hash"]; h == "" || h != newest {
+		t.Errorf("pod hash %q, newest ReplicaSet's %q", h, newest)
+	}
+	d, _ := c.Get(depGVR, "podserve", "m")
+	if og, _, _ := unstructured.NestedInt64(d.Object, "status", "observedGeneration"); og != d.GetGeneration() {
+		t.Errorf("observedGeneration %d, generation %d", og, d.GetGeneration())
+	}
+}
+
+// Recorded GKE states land on the fake's own pods: status copied, events re-pointed, integers int64.
+func TestSetServingPodsFromARecording(t *testing.T) {
+	c := New()
+	dep := obj("apps/v1", "Deployment", "qwen3-8b", map[string]any{"replicas": int64(1),
+		"template": map[string]any{"metadata": map[string]any{"labels": map[string]any{"podserve.dev/model": "qwen3-8b"}}}})
+	apply(t, c, depGVR, dep)
+	if err := c.SetServingPodsFrom("podserve", "qwen3-8b", "../../testdata/kube/failures/crashloop"); err != nil {
+		t.Fatal(err)
+	}
+	pods, _ := c.Resource(gvrPods).Namespace("podserve").List(context.Background(), metav1.ListOptions{LabelSelector: "podserve.dev/model=qwen3-8b"})
+	if len(pods.Items) != 1 {
+		t.Fatalf("%d pods, want 1", len(pods.Items))
+	}
+	p := pods.Items[0]
+	if p.GetLabels()["pod-template-hash"] == "" {
+		t.Error("the pod lacks the current template's pod-template-hash")
+	}
+	statuses, _, _ := unstructured.NestedSlice(p.Object, "status", "containerStatuses")
+	cs := statuses[0].(map[string]any)
+	if r, _, _ := unstructured.NestedString(cs, "state", "waiting", "reason"); r != "CrashLoopBackOff" {
+		t.Errorf("waiting reason %q", r)
+	}
+	if code, found, _ := unstructured.NestedInt64(cs, "lastState", "terminated", "exitCode"); !found || code != 2 {
+		t.Errorf("exit code %d (found %v), want int64 2", code, found)
+	}
+	events, _ := c.Resource(schema.GroupVersionResource{Version: "v1", Resource: "events"}).Namespace("podserve").List(context.Background(), metav1.ListOptions{})
+	backoff := false
+	for _, e := range events.Items {
+		name, _, _ := unstructured.NestedString(e.Object, "involvedObject", "name")
+		if e.Object["reason"] == "BackOff" && name == p.GetName() {
+			backoff = true
+		}
+	}
+	if !backoff {
+		t.Error("the recorded BackOff event isn't pointed at the fake's pod")
 	}
 }

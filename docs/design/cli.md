@@ -15,6 +15,7 @@ literal. Normal output goes to stdout; errors go to stderr, prefixed `podserve: 
 | 4 | not found or unreachable: no such model on the Hub, no such ModelService, platform not initialised, cluster unreachable |
 | 5 | timed out waiting |
 | 6 | the fetch Job failed (`GATED_NO_TOKEN`, `NO_SAFETENSORS`, size mismatch, other) |
+| 7 | the model failed to start (`deploy`: a crash loop, an image that can't be pulled, a container that can't be created; D-028) |
 
 ## Model sources
 
@@ -28,6 +29,12 @@ a commit SHA and prints its first 12 characters.
 ## `podserve version`
 
 Prints `podserve <VERSION>` and exits 0.
+
+`<VERSION>` is the module version Go recorded at build time (D-030):
+- `go install github.com/ryanymt/podserve/cmd/podserve@v0.1.1` gives the tag, `v0.1.1`;
+- `go build` in a git checkout gives a pseudo-version such as `v0.0.0-20261119024823-322d7cb47438`,
+  or the tag at a tagged commit, with `+dirty` when the tree had changes;
+- `go run`, `go test` and builds with no version recorded give `dev`.
 
 ## `podserve plan SOURCE [flags]`
 
@@ -114,13 +121,15 @@ podserve: cannot serve <ORG/MODEL>: <MESSAGE> (<CODE>)
   and exits 2. Two commands are exec'd:
   ```
   gcloud builds submit images/fetch --project <PROJECT> --region <REGION> \
-    --tag <IMAGES_REPO>/fetch:<VERSION> \
+    --tag <IMAGES_REPO>/fetch:<TAG> \
     --service-account projects/<PROJECT>/serviceAccounts/<BUILD_SA> \
     --gcs-source-staging-dir gs://<BUCKET>/_build/source --gcs-log-dir gs://<BUCKET>/_build/logs
-  gcloud artifacts docker images describe <IMAGES_REPO>/fetch:<VERSION> --project <PROJECT> \
+  gcloud artifacts docker images describe <IMAGES_REPO>/fetch:<TAG> --project <PROJECT> \
     --format value(image_summary.digest)
   ```
-  The second prints the digest. The image reference is `<IMAGES_REPO>/fetch@<DIGEST>`.
+  `<TAG>` is `<VERSION>` with every `+` replaced by `-`, because a Docker tag allows only
+  `[A-Za-z0-9_.-]`. The second command prints the digest. Both commands' own output goes to
+  stderr (the build log included), so stdout carries only `init`'s lines. The image reference is `<IMAGES_REPO>/fetch@<DIGEST>`.
 - **Applies** with server-side apply: the CRD (embedded), the namespace `podserve`, the service
   accounts `podserve-fetch` and `podserve-model`, and the ConfigMap `podserve/podserve-platform`.
   `vllmImage` = `<DOCKERHUB_MIRROR>/vllm/vllm-openai@<VLLM_DIGEST>`.
@@ -173,15 +182,15 @@ the fetch Job, the Deployment, the Service, the PodMonitoring. Owner references 
 `00000000-0000-0000-0000-000000000000`. It writes nothing to the cluster, but it reads the platform
 ConfigMap. Exit 0.
 
-**Steps.** Each stage line is printed once, as it's reached, with elapsed time since `deploy` started
+**Steps.** A stage line is printed as the stage is reached, with elapsed time since `deploy` started
 as `m:ss`. The stage name is padded to 10 columns. The CLI prints the `record` and `fetch` lines
 itself, around its calls to `pkg/kube`. The `node`, `image`, `loading` and `ready` lines come from
-`kube.Options.Progress` during `WaitReady`, which reports each stage the first time it sees it, and
+`kube.Options.Progress` during `WaitReady`, which reports the stage each time it changes, and
 always `ready` on success. So a deployment that's ready at the first check prints only the `ready`
 line. The CLI passes its own clock (`deps.Now` and `deps.Sleep`) to `kube.Options.Clock`.
 ```
 [0:01] record    applied podserve/<NAME>
-[0:01] fetch     caching <ORG/MODEL>@<SHA12> into gs://<BUCKET>/models/hf/<ORG/MODEL>/<SHA12>...
+[0:01] fetch     caching <ORG/MODEL>@<SHA12> into gs://<BUCKET>/models/hf/<ORG/MODEL>/<SHA>...
 [0:06] fetch     done
 [0:06] node      waiting for a GPU node (<N>x <TYPE>, spot)
 [2:51] image     pulling the vLLM image
@@ -190,18 +199,110 @@ line. The CLI passes its own clock (`deps.Now` and `deps.Sleep`) to `kube.Option
 Endpoint (in cluster): http://<NAME>.podserve.svc:8000/v1
 Try it: podserve port-forward <NAME>   then   curl localhost:8000/v1/models
 ```
+- **The fetch line** names the revision by its first 12 characters, and the GCS prefix with the full
+  40-character `<SHA>`, which is where the weights are.
 - **Cached weights:** when the fetch Job is already complete, or finds the marker, the second fetch
   line reads `fetch     cached` and has no `done` line.
 - **On-demand:** the node line says `on-demand` instead of `spot`.
+- **Falling back:** when the pods go back to an earlier stage, that stage's line prints again. For
+  example, a spot node is reclaimed during `loading`, and the ReplicaSet's new pod waits for a node:
+  ```
+  [15:49] loading   loading weights and warming up
+  [18:04] node      waiting for a GPU node (2x nvidia-l4, spot)
+  [18:34] node      FailedScaleUp: Node scale up in zones us-central1-c associated with this pod failed: GCE out of resources. Pod is at risk of not being scheduled.
+  ```
+  A reclaimed pod that Kubernetes removes before it is seen to end leaves no `TerminationByKubelet`
+  reason; the stage line is then the only sign.
+- **Readiness** counts only the newest pod template's pods (D-036): the Deployment's
+  `observedGeneration` has caught up with its `generation`, and `updatedReplicas` and
+  `readyReplicas` both equal `spec.replicas`.
 - **Status:** written through `/status`: `Caching` during fetch, `Deploying` after, `Ready` at the
-  end, `Failed` with a message on failure.
+  end, `Failed` with a message on failure or timeout.
+
+**Waiting reasons** (D-026). While it waits, `deploy` prints the reason each time it changes, on its
+own line under the current stage, from `kube.Options.Reason`:
+```
+[7:55] node      waiting for a GPU node (1x nvidia-l4, spot)
+[7:56] node      TriggeredScaleUp: Autopilot is adding a node
+[9:42] node      TerminationByKubelet: Pod was terminated in response to imminent node shutdown.
+```
+- **Format:** `[m:ss] <STAGE padded to 10 columns><REASON>: <MESSAGE>`. The stage is the current
+  stage.
+- **The message** is Kubernetes' message, with its whitespace collapsed to single spaces (that is
+  `Diagnosis.Message`). On a reason line, a message longer than 200 characters keeps its first 199
+  and ends with `…`. The failure output, the timeout error, the stored status and `podserve status`
+  carry the whole message: an image error's cause (`not found`, `must be lowercase`) comes at its
+  end. The exception is `TriggeredScaleUp`, whose message is always
+  `Autopilot is adding a node`: Autopilot's own text is a list of instance groups.
+- **When a reason line prints:** when the reason or its message differs from the last one printed,
+  and for the first reason after each stage line. The same reason and message don't repeat while
+  they stay current, so Autopilot's retries print a line only when its verdict changes: another
+  zone out of resources, a back-off, a new scale-up after a stage change.
+- **Which reason counts.** Scale-up events count only while a pod of the newest template is
+  unscheduled, and only that pod's latest. When several reasons apply, the first in this order wins:
+  `FailedScaleUp` or `NotTriggerScaleUp`, then `TerminationByKubelet`, then `ErrImagePull`, then
+  `TriggeredScaleUp`.
+- **The reasons:**
+  - `TriggeredScaleUp`, `FailedScaleUp` and `NotTriggerScaleUp`: Autopilot's scale-up events for a
+    pod;
+  - `TerminationByKubelet`: a pod of the newest template ended before Ready, for example when its spot
+    node was reclaimed (its `DisruptionTarget` condition), and its ReplicaSet starts another;
+  - `ErrImagePull`: an image pull that has been failing for less than 2 minutes.
+- **Not printed:** `FailedScheduling` events. They repeat during every cold start while Autopilot adds
+  a node.
+
+**A model that can't start** (D-026, D-027). The deploy fails when a pod of the newest template has:
+- a container waiting with `CrashLoopBackOff`, `InvalidImageName`, `CreateContainerConfigError` or
+  `CreateContainerError`;
+- or an image pull failing (`ErrImagePull`, `ImagePullBackOff`) for 2 minutes or more, counted from
+  the first `Failed` event for the pod.
+
+For an image pull, the message is the registry's own error: the message of the pod's latest `Failed`
+event that starts with `Failed to pull image`, or the container's waiting message if there is no
+such event. The same message is used for the `ErrImagePull` waiting reason during the 2 minutes.
+
+Then `deploy`:
+1. writes `Failed`, with the message `<REASON>: <MESSAGE>`;
+2. scales the Deployment to zero with a JSON merge patch on `spec.replicas`, so Autopilot releases
+   the GPU node;
+3. prints, on stderr:
+```
+podserve: <NAME> failed to start: <REASON>: <MESSAGE>
+  last run: exit code <N> (<TERMINATION_REASON>)
+  last lines of the vllm container's log:
+    <LINE>
+    …
+podserve: stopped <NAME> (replicas 0) so its GPU is released; fix it and run podserve deploy again, or podserve delete <NAME>
+```
+4. exits 7.
+
+The `last run` and log lines appear for `CrashLoopBackOff` only. The log is the container's previous
+run, at most 20 lines. If it can't be read, the two log lines are replaced by
+`  vllm container's log unavailable: <ERROR>`, and the failure is reported anyway.
+
+**Timeout.** It works the same way, but exits 5:
+1. it writes `Failed`, with the message `not ready after <D> (stage: <STAGE>)`, plus
+   `; last reason: <REASON>: <MESSAGE>` when there was one;
+2. it scales the Deployment to zero;
+3. it prints:
+```
+podserve: <NAME> not ready after <D> (stage: <STAGE>); last reason: <REASON>: <MESSAGE>
+podserve: stopped <NAME> (replicas 0) so its GPU is released; see: podserve status <NAME>
+```
+The `; last reason: …` part is left out when no reason was seen.
+
+**If the stop itself fails** (after a failure or a timeout), the last line becomes
+`podserve: could not stop <NAME>: <ERROR>; run podserve delete <NAME>`. The exit code stays 7 or 5.
+
+**Deploying again** applies the full Deployment, so its replica count comes back from the spec.
 
 **Failures:**
 
 | Case | stderr | Exit |
 |---|---|---|
 | Fetch Job failed | `podserve: fetching <ORG/MODEL> failed: <CODE>` plus a hint for `GATED_NO_TOKEN`: `add a token with: gcloud secrets versions add <SECRET_NAME> --data-file=-` | 6 |
-| Timeout | `podserve: <NAME> not ready after <D> (stage: <STAGE>); see: kubectl -n podserve logs deploy/<NAME>` | 5 |
+| The model can't start | as above | 7 |
+| Timeout | as above | 5 |
 | Platform not initialised | `podserve: platform not initialised: ConfigMap podserve/podserve-platform not found; run podserve init` | 4 |
 
 ## `podserve list [-o text|json]`
@@ -216,6 +317,40 @@ qwen3-8b   hf://Qwen/Qwen3-8B   b968826d9c46  1x nvidia-l4   Ready   http://qwen
   the first 12 characters of `status.resolvedRevision`, and `MODEL` the spec's source.
 - **Empty:** `No models deployed.`
 - **JSON:** an array of `{"name", "source", "revision", "gpuType", "gpuCount", "phase", "endpoint"}`.
+
+## `podserve status NAME [-o text|json]`
+
+Shows one model: its record, and where its serving pods are now (AC4).
+```
+Name:      qwen3-8b
+Model:     hf://Qwen/Qwen3-8B @ b968826d9c46
+GPU:       1x nvidia-l4, spot
+Phase:     Deploying
+Stage:     node
+Reason:    TriggeredScaleUp: Autopilot is adding a node
+Endpoint:  http://qwen3-8b.podserve.svc:8000/v1
+```
+- **Layout:** label and value, the labels padded to 11 columns. A missing value prints `-`.
+  - `Model` is the spec's source, `@`, and the first 12 characters of `status.resolvedRevision`.
+  - `GPU` is `<COUNT>x <TYPE>, spot` (or `on-demand`) from the status profile and
+    `spec.accelerator.spot`.
+- **A stopped model.** If its phase is `Failed`, or its Deployment has zero replicas, nothing is
+  read from pods:
+  - `Stage` is `stopped (replicas 0)`, or `-` when there's no Deployment;
+  - `Reason` is `status.message`.
+- **Otherwise** `Stage`, `Reason` and the message come from the same diagnosis as `deploy`
+  (`kube.Diagnose`, D-025). For a ready model, `Stage` is `ready` and `Reason` is `-`.
+- **`-o json`** prints one object: `{"name", "source", "revision", "gpuType", "gpuCount", "spot",
+  "phase", "stage", "reason", "message", "endpoint"}`.
+  - `stage` is one of `node`, `image`, `loading`, `ready`, `stopped`, or `""`.
+  - `reason` is the reason code, `""` for none; `message` is its message. For a stopped model,
+    `reason` is `""` and `message` is `status.message`.
+  - `gpuCount` is a number, and `spot` is a boolean.
+
+| Case | stderr | Exit |
+|---|---|---|
+| Unknown name | `podserve: no model named <NAME>` | 4 |
+| Platform not initialised | as for `deploy` | 4 |
 
 ## `podserve delete NAME [--timeout D]`
 

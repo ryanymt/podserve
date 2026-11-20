@@ -126,6 +126,7 @@ type EngineSpec struct {
 	// MaxModelLen caps the context length in tokens; 0 lets podserve choose from the KV-cache room.
 	// +kubebuilder:validation:Minimum=0
 	// +kubebuilder:validation:Maximum=1048576
+	// +kubebuilder:default=0
 	// +optional
 	MaxModelLen int32 `json:"maxModelLen,omitempty"`
 

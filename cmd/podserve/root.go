@@ -14,21 +14,22 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/podserve/podserve/catalog"
-	"github.com/podserve/podserve/pkg/hf"
-	"github.com/podserve/podserve/pkg/kube"
-	"github.com/podserve/podserve/pkg/profile"
+	"github.com/ryanymt/podserve/catalog"
+	"github.com/ryanymt/podserve/pkg/hf"
+	"github.com/ryanymt/podserve/pkg/kube"
+	"github.com/ryanymt/podserve/pkg/profile"
 )
 
 // Exit codes (docs/design/cli.md).
 const (
-	exitOK          = 0
-	exitUnexpected  = 1
-	exitUsage       = 2 // bad arguments or flags, or an invalid spec
-	exitRefused     = 3 // the settings engine won't serve this model here
-	exitNotFound    = 4 // not found or unreachable
-	exitTimeout     = 5 // timed out waiting
-	exitFetchFailed = 6 // the fetch Job failed
+	exitOK            = 0
+	exitUnexpected    = 1
+	exitUsage         = 2 // bad arguments or flags, or an invalid spec
+	exitRefused       = 3 // the settings engine won't serve this model here
+	exitNotFound      = 4 // not found or unreachable
+	exitTimeout       = 5 // timed out waiting
+	exitFetchFailed   = 6 // the fetch Job failed
+	exitFailedToStart = 7 // the model failed to start (D-028)
 )
 
 // exitError carries an exit code and the stderr lines printed for it, each prefixed "podserve: "
@@ -63,6 +64,7 @@ func newRoot(d deps) *cobra.Command {
 		initCmd(d),
 		deployCmd(d),
 		listCmd(d),
+		statusCmd(d),
 		deleteCmd(d),
 		portForwardCmd(d),
 	)

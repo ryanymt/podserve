@@ -6,7 +6,7 @@ package render_test
 import (
 	"testing"
 
-	"github.com/podserve/podserve/pkg/render"
+	"github.com/ryanymt/podserve/pkg/render"
 )
 
 func TestPodMonitoringIsDeepCopyable(t *testing.T) {

@@ -15,9 +15,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/yaml"
 
-	"github.com/podserve/podserve/catalog"
-	"github.com/podserve/podserve/pkg/api/v1alpha1"
-	"github.com/podserve/podserve/pkg/profile"
+	"github.com/ryanymt/podserve/catalog"
+	"github.com/ryanymt/podserve/pkg/api/v1alpha1"
+	"github.com/ryanymt/podserve/pkg/profile"
 )
 
 // ---- plan -----------------------------------------------------------------------------------------
@@ -127,6 +127,17 @@ func shortSHA(sha string) string {
 		return sha[:12]
 	}
 	return sha
+}
+
+// cut trims a message to 200 characters (runes) for one line of output: a longer one keeps its
+// first 199 and ends with "…" (docs/design/cli.md, deploy "Waiting reasons"; the failure output, the
+// stored status and podserve status carry the whole message).
+func cut(msg string) string {
+	r := []rune(msg)
+	if len(r) <= 200 {
+		return msg
+	}
+	return string(r[:199]) + "…"
 }
 
 // ---- status ---------------------------------------------------------------------------------------

@@ -26,13 +26,13 @@ import (
 	"k8s.io/client-go/dynamic"
 	"sigs.k8s.io/yaml"
 
-	"github.com/podserve/podserve/internal/fakekube"
-	"github.com/podserve/podserve/internal/hffixture"
-	"github.com/podserve/podserve/pkg/api/v1alpha1"
-	"github.com/podserve/podserve/pkg/hf"
-	"github.com/podserve/podserve/pkg/kube"
-	"github.com/podserve/podserve/pkg/platform"
-	"github.com/podserve/podserve/pkg/profile"
+	"github.com/ryanymt/podserve/internal/fakekube"
+	"github.com/ryanymt/podserve/internal/hffixture"
+	"github.com/ryanymt/podserve/pkg/api/v1alpha1"
+	"github.com/ryanymt/podserve/pkg/hf"
+	"github.com/ryanymt/podserve/pkg/kube"
+	"github.com/ryanymt/podserve/pkg/platform"
+	"github.com/ryanymt/podserve/pkg/profile"
 )
 
 // ---- fakes ---------------------------------------------------------------------------------------
@@ -60,6 +60,7 @@ type env struct {
 	advance bool        // Sleep advances the clock
 	onSleep func(n int) // called after every Sleep
 	sleeps  int
+	logs    kube.LogReader // what NewLogReader returns (P02); nil means no reader
 }
 
 var testPlatform = platform.Platform{
@@ -96,6 +97,9 @@ func (e *env) deps() deps {
 		NewHF:  func(token string) HFClient { return fakeHF{token: token} },
 		NewDynamic: func() (dynamic.Interface, error) {
 			return e.cluster, nil
+		},
+		NewLogReader: func() (kube.LogReader, error) {
+			return e.logs, nil
 		},
 		Exec: func(ctx context.Context, stdout, stderr io.Writer, name string, args ...string) error {
 			e.execs = append(e.execs, append([]string{name}, args...))
@@ -236,7 +240,7 @@ func TestDeployListDeleteLifecycle(t *testing.T) {
 	}
 	wantDeploy := `Planned: 1x nvidia-l4, tensor-parallel 1, context 17408 (Qwen/Qwen3-8B @ b968826d9c46)
 [0:00] record    applied podserve/qwen3-8b
-[0:00] fetch     caching Qwen/Qwen3-8B@b968826d9c46 into gs://my-project-podserve-models/models/hf/Qwen/Qwen3-8B/b968826d9c46...
+[0:00] fetch     caching Qwen/Qwen3-8B@b968826d9c46 into gs://my-project-podserve-models/models/hf/Qwen/Qwen3-8B/b968826d9c46dd6066d109eabc6255188de91218...
 [0:00] fetch     done
 [0:00] ready     qwen3-8b is ready
 Endpoint (in cluster): http://qwen3-8b.podserve.svc:8000/v1
@@ -458,29 +462,7 @@ func TestDeployFailures(t *testing.T) {
 			t.Errorf("status phase %q, want Failed", phase)
 		}
 	})
-
-	t.Run("timeout", func(t *testing.T) {
-		e := newEnv(t, false)
-		e.cluster.AutoReady = false
-		e.advance = true
-		job := platform.FetchJobName("Qwen/Qwen3-8B", "b968826d9c46dd6066d109eabc6255188de91218")
-		e.onSleep = func(int) {
-			if _, err := e.cluster.Get(kube.Jobs, "podserve", job); err == nil {
-				_ = e.cluster.CompleteJob("podserve", job)
-			}
-			if _, err := e.cluster.Get(kube.Deployments, "podserve", "qwen3-8b"); err == nil {
-				_ = e.cluster.SetServingPods("podserve", "qwen3-8b", fakekube.StageLoading)
-			}
-		}
-		code := e.run("deploy", "hf://Qwen/Qwen3-8B", "--timeout", "2m")
-		want := "podserve: qwen3-8b not ready after 2m0s (stage: loading); see: kubectl -n podserve logs deploy/qwen3-8b\n"
-		if code != 5 || e.stderr.String() != want {
-			t.Errorf("exit %d stderr %q\nwant %q", code, e.stderr.String(), want)
-		}
-		if !strings.Contains(e.stdout.String(), "] loading   loading weights and warming up\n") {
-			t.Errorf("no loading stage line:\n%s", e.stdout.String())
-		}
-	})
+	// The timeout case moved to deploy_failures_test.go (P02 T2): its expected output changed in v0.1.1.
 }
 
 // ---- init -------------------------------------------------------------------------------------------

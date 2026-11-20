@@ -1,100 +1,80 @@
 package kube
 
-// wait.go holds the poll loops: wait for the serving pods to be Ready, and wait for a delete's
-// garbage collection.
+// wait.go holds the poll loops: wait for the serving pods to be Ready (through Serving + Diagnose,
+// so a failure is returned at once with its reason), and wait for a delete's garbage collection.
 
 import (
 	"context"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/podserve/podserve/pkg/platform"
+	"github.com/ryanymt/podserve/pkg/platform"
 )
 
 // WaitReady waits until the ModelService's Deployment (same name) has all replicas Ready, or until
-// Options.Timeout (then *TimeoutError with the last stage reached). It reports each stage through
-// Options.Progress the first time it observes it, in order, and always reports StageReady on
-// success, even when the pods were Ready at the first check. Stages come from the pods labelled
-// podserve.dev/model=NAME: PodScheduled False -> node; scheduled, container waiting -> image;
-// running, not Ready -> loading; all replicas Ready -> ready.
+// Options.Timeout (then *TimeoutError with the last stage reached and, when one was seen, the last
+// waiting reason and its message). It reports the stage through Options.Progress each time it
+// changes, so pods that fall back to an earlier stage report it again, and always reports
+// StageReady on success, even when the pods were Ready at the first check. When Diagnose says the
+// model can't start (D-026) it returns *FailedError at once: a crash loop with the last lines of the
+// vllm container's previous log, when they can be read. The waiting reason is reported through
+// Options.Reason each time it or its message changes, and again for the first one after each change
+// of stage.
 func (c *Client) WaitReady(ctx context.Context, name string) error {
 	clk, poll, timeout := c.waitParams()
 	progress := newProgress(c)
-	selector := platform.ModelLabel + "=" + name
 	start := clk.Now()
+	stage, reason, message := StageNode, Reason(""), ""
+	// shown is the stage last reported, said the reason and message last reported since then.
+	shown, said := Stage(""), ""
 	for {
-		ready, stage, err := c.servingState(ctx, name, selector)
-		if err != nil {
+		s, err := c.Serving(ctx, name)
+		if err != nil && !transient(err) {
 			return err
 		}
-		if ready {
+		if err != nil { // the API server was briefly unavailable: keep waiting, until the timeout
+			if clk.Now().Sub(start) >= timeout {
+				return &TimeoutError{Stage: stage, After: timeout, Reason: reason, Message: message}
+			}
+			clk.Sleep(poll)
+			continue
+		}
+		d := Diagnose(s, clk.Now())
+		if d.Ready {
 			progress.reach(StageReady)
 			return nil
 		}
-		progress.reach(stage)
+		if d.Failed {
+			var fe FailedError
+			fe.Diagnosis = d
+			if d.Reason == ReasonCrashLoop && c.Logs != nil {
+				fe.Log, fe.LogErr = c.Logs.PreviousLog(ctx, d.Pod, "vllm", 20)
+				if fe.LogErr != nil {
+					fe.Log = nil // a log that can't be read is reported, never fatal
+				}
+			}
+			return &fe
+		}
+		if d.Stage != shown {
+			progress.reach(d.Stage)
+			shown, said = d.Stage, ""
+		}
+		if d.Reason != "" {
+			if key := string(d.Reason) + "\x00" + d.Message; key != said {
+				said = key
+				if c.Options.Reason != nil {
+					c.Options.Reason(d)
+				}
+			}
+			reason, message = d.Reason, d.Message
+		}
+		stage = d.Stage
 		if clk.Now().Sub(start) >= timeout {
-			return &TimeoutError{Stage: stage, After: timeout}
+			return &TimeoutError{Stage: stage, After: timeout, Reason: reason, Message: message}
 		}
 		clk.Sleep(poll)
 	}
-}
-
-// servingState says whether the Deployment NAME has all its replicas Ready, and if not, which
-// stage its pods are waiting at: the earliest across the pods, node when there are none yet.
-func (c *Client) servingState(ctx context.Context, name, selector string) (bool, Stage, error) {
-	dep, err := c.deployments().Get(ctx, name, metav1.GetOptions{})
-	if err != nil {
-		return false, StageNode, err
-	}
-	replicas := int64(1)
-	if n, ok, _ := unstructured.NestedInt64(dep.Object, "spec", "replicas"); ok && n > 0 {
-		replicas = n
-	}
-	ready, _, _ := unstructured.NestedInt64(dep.Object, "status", "readyReplicas")
-	if ready >= replicas {
-		return true, StageReady, nil
-	}
-	pods, err := c.pods().List(ctx, metav1.ListOptions{LabelSelector: selector})
-	if err != nil {
-		return false, StageNode, err
-	}
-	stage := StageNode // no pods yet: still waiting for a node
-	if len(pods.Items) > 0 {
-		stage = podStage(&pods.Items[0])
-		for i := 1; i < len(pods.Items); i++ {
-			if s := podStage(&pods.Items[i]); stageRank[s] < stageRank[stage] {
-				stage = s
-			}
-		}
-	}
-	return false, stage, nil
-}
-
-// stageRank orders the stages by how early in a pod's start-up they are.
-var stageRank = map[Stage]int{StageNode: 0, StageImage: 1, StageLoading: 2, StageReady: 3}
-
-// podStage says how far one serving pod has got: node while it has nowhere to run, image while its
-// container is waiting to start, loading once it runs (not Ready, or we wouldn't be polling).
-func podStage(p *unstructured.Unstructured) Stage {
-	if conditionStatus(p.Object, "PodScheduled") != "True" {
-		return StageNode
-	}
-	statuses, found, _ := unstructured.NestedSlice(p.Object, "status", "containerStatuses")
-	if !found {
-		return StageImage
-	}
-	for _, s := range statuses {
-		cs, ok := s.(map[string]any)
-		if !ok {
-			continue
-		}
-		if _, waiting, _ := unstructured.NestedMap(cs, "state", "waiting"); waiting {
-			return StageImage
-		}
-	}
-	return StageLoading
 }
 
 // Delete deletes the ModelService (its children go with it through owner references), waits until
@@ -118,10 +98,10 @@ func (c *Client) Delete(ctx context.Context, name string) error {
 	start := clk.Now()
 	for {
 		pods, err := c.pods().List(ctx, metav1.ListOptions{LabelSelector: selector})
-		if err != nil {
+		if err != nil && !transient(err) {
 			return err
 		}
-		if len(pods.Items) == 0 {
+		if err == nil && len(pods.Items) == 0 {
 			break
 		}
 		if clk.Now().Sub(start) >= timeout {

@@ -1,0 +1,353 @@
+{
+ "apiVersion": "v1",
+ "items": [
+  {
+   "apiVersion": "v1",
+   "kind": "Pod",
+   "metadata": {
+    "annotations": {
+     "autopilot.gke.io/selector-toleration": "{\"inputTolerations\":[{\"key\":\"kubernetes.io/arch\",\"operator\":\"Equal\",\"value\":\"amd64\",\"effect\":\"NoSchedule\"}],\"outputTolerations\":[{\"key\":\"kubernetes.io/arch\",\"operator\":\"Equal\",\"value\":\"amd64\",\"effect\":\"NoSchedule\"},{\"key\":\"cloud.google.com/gke-spot\",\"operator\":\"Equal\",\"value\":\"true\",\"effect\":\"NoSchedule\"}],\"modified\":true}"
+    },
+    "creationTimestamp": "2026-11-19T04:03:34Z",
+    "generateName": "qwen3-8b-66c4d696c8-",
+    "generation": 1,
+    "labels": {
+     "app.kubernetes.io/component": "server",
+     "app.kubernetes.io/managed-by": "podserve",
+     "pod-template-hash": "66c4d696c8",
+     "podserve.dev/model": "qwen3-8b",
+     "podserve.dev/revision": "b968826d9c46dd6066d109eabc6255188de91218",
+     "topology.kubernetes.io/region": "us-central1",
+     "topology.kubernetes.io/zone": "us-central1-a"
+    },
+    "name": "qwen3-8b-66c4d696c8-twg5q",
+    "namespace": "podserve",
+    "ownerReferences": [
+     {
+      "apiVersion": "apps/v1",
+      "blockOwnerDeletion": true,
+      "controller": true,
+      "kind": "ReplicaSet",
+      "name": "qwen3-8b-66c4d696c8",
+      "uid": "f37cdbf1-84d8-4338-8c14-2105b8d1ed21"
+     }
+    ],
+    "resourceVersion": "1795061031730367019",
+    "uid": "262574d9-434a-4ef9-91dd-2220c7e2f4fa"
+   },
+   "spec": {
+    "containers": [
+     {
+      "args": [
+       "gs://my-project-podserve-models/models/hf/Qwen/Qwen3-8B/b968826d9c46dd6066d109eabc6255188de91218/",
+       "--load-format=runai_streamer",
+       "--model-loader-extra-config={\"memory_limit\":4294967296}",
+       "--served-model-name=Qwen/Qwen3-8B",
+       "--tensor-parallel-size=1",
+       "--max-model-len=17408",
+       "--gpu-memory-utilization=0.90",
+       "--dtype=bfloat16",
+       "--port=8000"
+      ],
+      "env": [
+       {
+        "name": "HF_HUB_OFFLINE",
+        "value": "1"
+       }
+      ],
+      "image": "us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:0000000000000000000000000000000000000000000000000000000000000001",
+      "imagePullPolicy": "IfNotPresent",
+      "name": "vllm",
+      "ports": [
+       {
+        "containerPort": 8000,
+        "name": "http",
+        "protocol": "TCP"
+       }
+      ],
+      "readinessProbe": {
+       "failureThreshold": 3,
+       "httpGet": {
+        "path": "/health",
+        "port": "http",
+        "scheme": "HTTP"
+       },
+       "periodSeconds": 10,
+       "successThreshold": 1,
+       "timeoutSeconds": 1
+      },
+      "resources": {
+       "limits": {
+        "nvidia.com/gpu": "1"
+       },
+       "requests": {
+        "cpu": "6",
+        "ephemeral-storage": "10Gi",
+        "memory": "24Gi",
+        "nvidia.com/gpu": "1"
+       }
+      },
+      "securityContext": {
+       "capabilities": {
+        "drop": [
+         "NET_RAW"
+        ]
+       }
+      },
+      "startupProbe": {
+       "failureThreshold": 180,
+       "httpGet": {
+        "path": "/health",
+        "port": "http",
+        "scheme": "HTTP"
+       },
+       "periodSeconds": 10,
+       "successThreshold": 1,
+       "timeoutSeconds": 1
+      },
+      "terminationMessagePath": "/dev/termination-log",
+      "terminationMessagePolicy": "File",
+      "volumeMounts": [
+       {
+        "mountPath": "/dev/shm",
+        "name": "shm"
+       },
+       {
+        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+        "name": "kube-api-access-9tdzm",
+        "readOnly": true
+       }
+      ]
+     }
+    ],
+    "dnsPolicy": "ClusterFirst",
+    "enableServiceLinks": false,
+    "nodeName": "gk3-podserve-nap-7823w91j-5d215719-6566",
+    "nodeSelector": {
+     "cloud.google.com/gke-accelerator": "nvidia-l4",
+     "cloud.google.com/gke-accelerator-count": "1",
+     "cloud.google.com/gke-gpu-driver-version": "latest",
+     "cloud.google.com/gke-spot": "true"
+    },
+    "preemptionPolicy": "PreemptLowerPriority",
+    "priority": 0,
+    "restartPolicy": "Always",
+    "schedulerName": "gke.io/optimize-utilization-scheduler",
+    "securityContext": {
+     "seccompProfile": {
+      "type": "RuntimeDefault"
+     }
+    },
+    "serviceAccount": "podserve-model",
+    "serviceAccountName": "podserve-model",
+    "terminationGracePeriodSeconds": 25,
+    "tolerations": [
+     {
+      "effect": "NoSchedule",
+      "key": "kubernetes.io/arch",
+      "operator": "Equal",
+      "value": "amd64"
+     },
+     {
+      "effect": "NoSchedule",
+      "key": "cloud.google.com/gke-spot",
+      "operator": "Equal",
+      "value": "true"
+     },
+     {
+      "effect": "NoSchedule",
+      "key": "cloud.google.com/gke-accelerator",
+      "operator": "Equal",
+      "value": "nvidia-l4"
+     },
+     {
+      "effect": "NoSchedule",
+      "key": "cloud.google.com/machine-family",
+      "operator": "Exists"
+     },
+     {
+      "effect": "NoExecute",
+      "key": "node.kubernetes.io/not-ready",
+      "operator": "Exists",
+      "tolerationSeconds": 300
+     },
+     {
+      "effect": "NoExecute",
+      "key": "node.kubernetes.io/unreachable",
+      "operator": "Exists",
+      "tolerationSeconds": 300
+     },
+     {
+      "effect": "NoSchedule",
+      "key": "nvidia.com/gpu",
+      "operator": "Exists"
+     }
+    ],
+    "volumes": [
+     {
+      "emptyDir": {
+       "medium": "Memory",
+       "sizeLimit": "8Gi"
+      },
+      "name": "shm"
+     },
+     {
+      "name": "kube-api-access-9tdzm",
+      "projected": {
+       "defaultMode": 420,
+       "sources": [
+        {
+         "serviceAccountToken": {
+          "expirationSeconds": 3607,
+          "path": "token"
+         }
+        },
+        {
+         "configMap": {
+          "items": [
+           {
+            "key": "ca.crt",
+            "path": "ca.crt"
+           }
+          ],
+          "name": "kube-root-ca.crt"
+         }
+        },
+        {
+         "downwardAPI": {
+          "items": [
+           {
+            "fieldRef": {
+             "apiVersion": "v1",
+             "fieldPath": "metadata.namespace"
+            },
+            "path": "namespace"
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "status": {
+    "allocatedResources": {
+     "cpu": "6",
+     "ephemeral-storage": "10Gi",
+     "memory": "24Gi",
+     "nvidia.com/gpu": "1"
+    },
+    "conditions": [
+     {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-11-19T04:03:35Z",
+      "observedGeneration": 1,
+      "status": "True",
+      "type": "PodReadyToStartContainers"
+     },
+     {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-11-19T04:03:34Z",
+      "observedGeneration": 1,
+      "status": "True",
+      "type": "Initialized"
+     },
+     {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-11-19T04:03:34Z",
+      "message": "containers with unready status: [vllm]",
+      "observedGeneration": 1,
+      "reason": "ContainersNotReady",
+      "status": "False",
+      "type": "Ready"
+     },
+     {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-11-19T04:03:34Z",
+      "message": "containers with unready status: [vllm]",
+      "observedGeneration": 1,
+      "reason": "ContainersNotReady",
+      "status": "False",
+      "type": "ContainersReady"
+     },
+     {
+      "lastProbeTime": null,
+      "lastTransitionTime": "2026-11-19T04:03:34Z",
+      "observedGeneration": 1,
+      "status": "True",
+      "type": "PodScheduled"
+     }
+    ],
+    "containerStatuses": [
+     {
+      "allocatedResourcesStatus": [
+       {
+        "name": "nvidia.com/gpu",
+        "resources": [
+         {
+          "health": "Healthy",
+          "resourceID": "nvidia0"
+         }
+        ]
+       }
+      ],
+      "image": "us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:0000000000000000000000000000000000000000000000000000000000000001",
+      "imageID": "",
+      "lastState": {},
+      "name": "vllm",
+      "ready": false,
+      "restartCount": 0,
+      "started": false,
+      "state": {
+       "waiting": {
+        "message": "Back-off pulling image \"us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:0000000000000000000000000000000000000000000000000000000000000001\": ErrImagePull: rpc error: code = NotFound desc = failed to pull and unpack image \"us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:0000000000000000000000000000000000000000000000000000000000000001\": failed to resolve reference \"us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:0000000000000000000000000000000000000000000000000000000000000001\": us-central1-docker.pkg.dev/my-project/podserve-dockerhub/vllm/vllm-openai@sha256:0000000000000000000000000000000000000000000000000000000000000001: not found",
+        "reason": "ImagePullBackOff"
+       }
+      },
+      "volumeMounts": [
+       {
+        "mountPath": "/dev/shm",
+        "name": "shm"
+       },
+       {
+        "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+        "name": "kube-api-access-9tdzm",
+        "readOnly": true,
+        "recursiveReadOnly": "Disabled"
+       }
+      ]
+     }
+    ],
+    "hostIP": "10.10.0.6",
+    "hostIPs": [
+     {
+      "ip": "10.10.0.6"
+     }
+    ],
+    "observedGeneration": 1,
+    "phase": "Pending",
+    "podIP": "10.32.0.199",
+    "podIPs": [
+     {
+      "ip": "10.32.0.199"
+     }
+    ],
+    "qosClass": "Burstable",
+    "resources": {
+     "limits": {
+      "nvidia.com/gpu": "1"
+     },
+     "requests": {
+      "cpu": "6",
+      "ephemeral-storage": "10Gi",
+      "memory": "24Gi",
+      "nvidia.com/gpu": "1"
+     }
+    },
+    "startTime": "2026-11-19T04:03:34Z"
+   }
+  }
+ ],
+ "kind": "List"
+}

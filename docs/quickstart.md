@@ -147,8 +147,22 @@ Deployable:   yes
 
 A second deploy of the same model and revision skips the copy: the cached run took 7:12.
 
-You may see lines like `Warning: autopilot-workload-defaulter:Autopilot added tolerations…` on
-stderr. They're Autopilot telling you what it adjusted, and are harmless.
+While it waits, `deploy` also prints why, under the current stage, each time the reason changes.
+Two examples:
+- `TriggeredScaleUp: Autopilot is adding a node`;
+- `TerminationByKubelet: Pod was terminated in response to imminent node shutdown.` when a spot node
+  is reclaimed and the pod starts again elsewhere.
+
+If the pod goes back to an earlier stage, for example to `node` after a reclaim, that stage's line
+prints again.
+
+If the model can't start, `deploy` doesn't wait out its timeout:
+- it stops within a minute or two;
+- it scales the model to zero, so the GPU is released;
+- it prints the reason and exits 7.
+
+See [When something goes wrong](#when-something-goes-wrong). `./podserve status qwen3-8b` shows a
+model's phase, its stage and the reason at any time.
 
 ### Talk to it
 
@@ -229,8 +243,10 @@ This path is covered by tests but hasn't yet been run against the live Hub.
 
 | What you see | What it means |
 |---|---|
-| `deploy` sits at `node` for a long time, and `kubectl -n podserve get events` shows `FailedScaleUp` | No spot L4 is free in your region right now. Autopilot keeps trying. Wait, try another region, or deploy on demand with `--spot=false` (it needs on-demand L4 quota). |
+| `deploy` sits at `node` and prints `FailedScaleUp` or `NotTriggerScaleUp` | Autopilot can't add a GPU node: no spot L4 is free in your region right now, or the project has no L4 quota there. (Autopilot's events don't say which.) It keeps trying. Wait, check your L4 quota, try another region, or deploy on demand with `--spot=false`, which needs on-demand L4 quota. |
 | `podserve: platform not initialised` | Run `./podserve init --config platform.json` against this cluster. |
 | `podserve plan` refuses a model | The message names the reason: not a text-generation model, an architecture vLLM doesn't support, no safetensors, gated without a token, or too big for 8 L4s. |
-| `deploy` times out | The message names the stage. `kubectl -n podserve logs deploy/<name>` shows vLLM's log; `kubectl -n podserve get pods,events` shows scheduling. |
+| `deploy` prints `TerminationByKubelet` | A spot node was reclaimed. Kubernetes starts the pod again on a new node, and `deploy` keeps waiting. |
+| `deploy` exits 7: `failed to start` | The model can't start, and the message says why. For a crash loop it shows the exit code and the last lines of vLLM's log; a wrong `extraArgs` value is the usual cause. The model is stopped (scaled to zero) so its GPU is released. Fix it and run `deploy` again, or `podserve delete` it. |
+| `deploy` times out (exit 5) | The message names the stage and the last reason seen, and the model is stopped. `./podserve status <name>` shows the record; `kubectl -n podserve get pods,events` shows the detail. |
 | `terraform apply` fails on an organisation policy constraint | Your organisation blocks something the platform needs. Please open an issue with the constraint's name. |

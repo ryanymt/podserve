@@ -1,4 +1,4 @@
-module github.com/podserve/podserve
+module github.com/ryanymt/podserve
 
 go 1.26
 

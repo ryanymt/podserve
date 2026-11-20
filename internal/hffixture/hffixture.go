@@ -13,7 +13,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/podserve/podserve/pkg/profile"
+	"github.com/ryanymt/podserve/pkg/profile"
 )
 
 // Info is the trimmed model-info response.

@@ -18,7 +18,7 @@ Deployable:   yes
 $ podserve deploy hf://Qwen/Qwen3-14B
 Planned: 2x nvidia-l4, tensor-parallel 2, context 40960 (Qwen/Qwen3-14B @ 40c069824f42)
 [0:00] record    applied podserve/qwen3-14b
-[0:01] fetch     caching Qwen/Qwen3-14B@40c069824f42 into gs://my-gcp-project-podserve-models/models/hf/Qwen/Qwen3-14B/40c069824f42...
+[0:01] fetch     caching Qwen/Qwen3-14B@40c069824f42 into gs://podserve-models-1c7cd944c28c/models/hf/Qwen/Qwen3-14B/40c069824f4251a91eefaf281ebe4c544efd3e18...
 [8:37] fetch     done
 [8:38] node      waiting for a GPU node (2x nvidia-l4, spot)
 [10:31] image     pulling the vLLM image
@@ -27,16 +27,18 @@ Planned: 2x nvidia-l4, tensor-parallel 2, context 40960 (Qwen/Qwen3-14B @ 40c069
 Endpoint (in cluster): http://qwen3-14b.podserve.svc:8000/v1
 ```
 
-## What is included in v0.1
+## What is included in v0.1.1
 
-v0.1 delivers the single-model, one-command end-to-end foundation on GKE Autopilot:
+v0.1 delivered the single-model, one-command end-to-end foundation on GKE Autopilot; v0.1.1 hardens
+it (see [CHANGELOG.md](CHANGELOG.md)):
 
 - **Terraform platform ([`deploy/terraform`](deploy/terraform)):** provisions a VPC and private subnet with Cloud NAT, a private regional GKE Autopilot cluster, a Cloud Storage model-cache bucket, an Artifact Registry Docker Hub mirror + custom image repository, a Secret Manager slot for optional Hugging Face tokens, Workload Identity Federation bindings (no service-account keys), and a Cloud Monitoring dashboard.
 - **Zero-GPU planner (`podserve plan`):** fetches `config.json` from Hugging Face, validates vLLM `v0.32.0` architecture support, and calculates GPU count, tensor parallelism, maximum context length, and KV cache capacity against [`catalog/gpus.yaml`](catalog/gpus.yaml)—or explains clearly why a model cannot be served.
-- **CLI lifecycle (`podserve init`, `deploy`, `list`, `delete`, `port-forward`):** records a `ModelService` custom resource (`podserve.dev/v1alpha1`), runs an isolated CPU fetch Job (`images/fetch/`) to cache `.safetensors` weights into GCS pinned by commit SHA, launches a spot or on-demand NVIDIA L4 vLLM Deployment streaming directly from GCS (`runai_streamer`, `HF_HUB_OFFLINE=1`), and tears down GPU nodes cleanly on `delete`.
+- **CLI lifecycle (`podserve init`, `deploy`, `list`, `status`, `delete`, `port-forward`):** records a `ModelService` custom resource (`podserve.dev/v1alpha1`), runs an isolated CPU fetch Job (`images/fetch/`) to cache `.safetensors` weights into GCS pinned by commit SHA, launches a spot or on-demand NVIDIA L4 vLLM Deployment streaming directly from GCS (`runai_streamer`, `HF_HUB_OFFLINE=1`), and tears down GPU nodes cleanly on `delete`.
+- **Fail fast, say why (v0.1.1):** when a model can't start (a crash loop, an image that can't be pulled), `deploy` stops at once, prints Kubernetes' reason and the last lines of vLLM's log, exits 7, and scales the model to zero so the GPU node is released. While it waits it prints Autopilot's reasons (a node being added, a spot stockout, a reclaimed spot node). `podserve status NAME` shows a model's phase, stage and reason at any time.
 - **Observability ([`dashboards/model-service.json`](dashboards/model-service.json)):** Managed Prometheus `PodMonitoring` and a pre-built Cloud Monitoring dashboard filtered by `model_name` (TTFT, inter-token latency, end-to-end latency, request/token throughput, running vs. waiting queue, KV cache usage, prefix-cache hits, and preemptions).
 
-### Not yet in v0.1
+### Not yet in v0.1.1
 
 - **Endpoint exposure & auth:** services are ClusterIP-only inside the cluster (reached locally via `podserve port-forward`); GKE Inference Gateway routing, API keys, and external ingress arrive in later releases.
 - **Single replica, CLI-driven reconciliation:** no autoscaling, scale-to-zero, or in-cluster operator yet (the v0.2 operator adopts the v0.1 `ModelService` CRD unchanged).
@@ -161,7 +163,7 @@ flowchart LR
 2. **Records:** applies a `ModelService` custom resource (`podserve.dev/v1alpha1`) as the source of truth ([`docs/design/modelservice.md`](docs/design/modelservice.md)).
 3. **Caches:** runs an isolated CPU Kubernetes Job (`images/fetch/`) that copies `.safetensors` weights into your GCS bucket pinned to the commit SHA, skipping the copy on subsequent deploys.
 4. **Serves:** applies a Deployment, ClusterIP Service, and `PodMonitoring` resource. GKE Autopilot provisions a spot L4 node when scheduled and releases it after deletion; vLLM runs offline (`HF_HUB_OFFLINE=1`) streaming weights directly from GCS.
-5. **Waits:** streams stage progress (`record` -> `fetch` -> `node` -> `image` -> `loading` -> `ready`) until `/v1/models` is healthy.
+5. **Waits:** streams stage progress (`record` -> `fetch` -> `node` -> `image` -> `loading` -> `ready`) and Autopilot's waiting reasons until `/v1/models` is healthy. A model that can't start is stopped at once with Kubernetes' reason and scaled to zero, so no GPU keeps running.
 
 **Platform design defaults** ([`docs/design/platform.md`](docs/design/platform.md)):
 - **Workload Identity Federation:** workloads authenticate directly as Kubernetes service accounts with zero exported service-account keys.
@@ -185,9 +187,11 @@ Load test (`deploy/examples/loadtest-job.yaml`, Qwen3-8B on 1x L4, 200 prompts o
 - **Inter-token latency:** p50 `66 ms`
 - **Throughput:** `105` output tok/s
 
+v0.1.1's live run measured Qwen3-8B again: first deploy `16:16`, a cached redeploy `3:40`, and the same load test at `105` output tok/s with a median TTFT of `988 ms`.
+
 ## Supported models and GPUs
 
-In v0.1, `podserve deploy` accepts a Hugging Face model when:
+In v0.1.1, `podserve deploy` accepts a Hugging Face model when:
 - Its Hub pipeline tag is `text-generation`.
 - Its architecture is natively supported by vLLM `v0.32.0` ([`catalog/vllm-v0.32.0-architectures.txt`](catalog/vllm-v0.32.0-architectures.txt)).
 - It ships `.safetensors` weights (pickle `.bin` checkpoints are refused).
@@ -201,7 +205,8 @@ The long-term goal is a complete, self-hosted GCP model-serving platform from si
 
 | Release | Scope |
 |---|---|
-| **v0.1** | One model, one command: Terraform platform, CLI planner & deployer, text models on spot L4, Cloud Monitoring dashboard |
+| v0.1 | One model, one command: Terraform platform, CLI planner & deployer, text models on spot L4, Cloud Monitoring dashboard |
+| **v0.1.1** | Hardening: `deploy` fails fast and says why, `podserve status`, `go install` from the tag |
 | **v0.2** | Kubernetes operator (`ModelCache` / `ModelService`), GKE Inference Gateway for multi-model routing, autoscaling & scale-to-zero, faster cold starts |
 | **v0.3** | Multimodal vision, embeddings, rerankers, quantized weights, tool calling, LoRA adapters, and compatibility support matrix |
 | **v0.4** | Multi-tenancy & GPU quotas, API keys & rate limits, weight supply-chain security, Model Armor integration |

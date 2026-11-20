@@ -13,11 +13,13 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime/debug"
 	"time"
 
 	"k8s.io/client-go/dynamic"
 
-	"github.com/podserve/podserve/pkg/profile"
+	"github.com/ryanymt/podserve/pkg/kube"
+	"github.com/ryanymt/podserve/pkg/profile"
 )
 
 // HFClient is what the CLI needs from pkg/hf (satisfied by *hf.Client).
@@ -33,6 +35,8 @@ type deps struct {
 	NewHF func(token string) HFClient
 	// NewDynamic returns a client for the current kubeconfig context.
 	NewDynamic func() (dynamic.Interface, error)
+	// NewLogReader returns a reader of containers' previous logs for the same context (D-029).
+	NewLogReader func() (kube.LogReader, error)
 	// Exec runs an external command (gcloud, kubectl) with the given stdio and returns its error.
 	Exec func(ctx context.Context, stdout, stderr io.Writer, name string, args ...string) error
 	// Clock for waits and timing.
@@ -42,8 +46,19 @@ type deps struct {
 	Version string
 }
 
-// version is set at release build time with -ldflags "-X main.version=v0.1.0".
-var version = "dev"
+// version is the module version Go recorded at build time (D-030): the tag for
+// `go install github.com/ryanymt/podserve/cmd/podserve@v0.1.1`, a pseudo-version for `go build` in a
+// git checkout (with "+dirty" when the tree had changes), and "dev" when none was recorded
+// (`go run`, `go test`).
+var version = versionFrom(debug.ReadBuildInfo())
+
+// versionFrom picks the version from build info; see version.
+func versionFrom(info *debug.BuildInfo, ok bool) string {
+	if !ok || info == nil || info.Main.Version == "" || info.Main.Version == "(devel)" {
+		return "dev"
+	}
+	return info.Main.Version
+}
 
 func main() {
 	os.Exit(run(context.Background(), os.Args[1:], defaultDeps()))

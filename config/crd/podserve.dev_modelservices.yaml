@@ -116,6 +116,7 @@ spec:
                     minimum: 50
                     type: integer
                   maxModelLen:
+                    default: 0
                     description: MaxModelLen caps the context length in tokens; 0
                       lets podserve choose from the KV-cache room.
                     format: int32

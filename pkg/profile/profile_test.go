@@ -14,9 +14,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/podserve/podserve/catalog"
-	"github.com/podserve/podserve/internal/hffixture"
-	"github.com/podserve/podserve/pkg/profile"
+	"github.com/ryanymt/podserve/catalog"
+	"github.com/ryanymt/podserve/internal/hffixture"
+	"github.com/ryanymt/podserve/pkg/profile"
 )
 
 type caseFile struct {

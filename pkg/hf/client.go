@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"sort"
 	"strings"
 
-	"github.com/podserve/podserve/pkg/platform"
-	"github.com/podserve/podserve/pkg/profile"
+	"github.com/ryanymt/podserve/pkg/platform"
+	"github.com/ryanymt/podserve/pkg/profile"
 )
 
 // Client talks to the Hub. The zero value is not usable; call New.
@@ -85,7 +86,9 @@ func (c *Client) Model(ctx context.Context, repo, revision string) (profile.Mode
 
 // modelInfo resolves revision and returns the trimmed model-info response.
 func (c *Client) modelInfo(ctx context.Context, repo, revision string) (*infoResponse, error) {
-	path := "/api/models/" + repo + "/revision/" + revision + "?blobs=true"
+	// The revision is one path segment, so a "/" in it (refs/pr/1, release/v2) must be escaped; the
+	// repo id keeps its own "/".
+	path := "/api/models/" + repo + "/revision/" + url.PathEscape(revision) + "?blobs=true"
 	status, body, err := c.get(ctx, path)
 	if err != nil {
 		return nil, err

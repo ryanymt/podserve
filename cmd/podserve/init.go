@@ -13,8 +13,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/podserve/podserve/config/crd"
-	"github.com/podserve/podserve/pkg/platform"
+	"github.com/ryanymt/podserve/config/crd"
+	"github.com/ryanymt/podserve/pkg/platform"
 )
 
 // initOutputs are the Terraform outputs `podserve init --config` needs, in docs/design/platform.md's
@@ -115,8 +115,8 @@ func buildFetchImage(ctx context.Context, d deps, get func(string) string, versi
 		return "", failf(exitUsage, "images/fetch not found; run init from the podserve repository root or pass --fetch-image")
 	}
 	fmt.Fprintln(d.Stdout, "Building the fetch image with Cloud Build...")
-	tag := fmt.Sprintf("%s/fetch:%s", get("images_repo"), version)
-	if err := d.Exec(ctx, d.Stdout, d.Stderr, "gcloud", "builds", "submit", "images/fetch",
+	tag := fmt.Sprintf("%s/fetch:%s", get("images_repo"), imageTag(version))
+	if err := d.Exec(ctx, d.Stderr, d.Stderr, "gcloud", "builds", "submit", "images/fetch",
 		"--project", get("project_id"),
 		"--region", get("region"),
 		"--tag", tag,
@@ -138,4 +138,10 @@ func buildFetchImage(ctx context.Context, d deps, get func(string) string, versi
 		return "", failf(exitUnexpected, "gcloud reported no digest for %s", tag)
 	}
 	return fmt.Sprintf("%s/fetch@%s", get("images_repo"), ref), nil
+}
+
+// imageTag turns a version into a Docker tag (D-030). Tags allow only [A-Za-z0-9_.-], and Go adds
+// "+dirty" to the version of a build from a modified tree.
+func imageTag(version string) string {
+	return strings.ReplaceAll(version, "+", "-")
 }

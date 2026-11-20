@@ -18,11 +18,11 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	k8stesting "k8s.io/client-go/testing"
 
-	"github.com/podserve/podserve/config/crd"
-	"github.com/podserve/podserve/internal/fakekube"
-	"github.com/podserve/podserve/pkg/api/v1alpha1"
-	"github.com/podserve/podserve/pkg/kube"
-	"github.com/podserve/podserve/pkg/platform"
+	"github.com/ryanymt/podserve/config/crd"
+	"github.com/ryanymt/podserve/internal/fakekube"
+	"github.com/ryanymt/podserve/pkg/api/v1alpha1"
+	"github.com/ryanymt/podserve/pkg/kube"
+	"github.com/ryanymt/podserve/pkg/platform"
 )
 
 const (

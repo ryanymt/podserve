@@ -18,11 +18,11 @@ import (
 	k8stypes "k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/yaml"
 
-	"github.com/podserve/podserve/internal/hffixture"
-	"github.com/podserve/podserve/pkg/api/v1alpha1"
-	"github.com/podserve/podserve/pkg/platform"
-	"github.com/podserve/podserve/pkg/profile"
-	"github.com/podserve/podserve/pkg/render"
+	"github.com/ryanymt/podserve/internal/hffixture"
+	"github.com/ryanymt/podserve/pkg/api/v1alpha1"
+	"github.com/ryanymt/podserve/pkg/platform"
+	"github.com/ryanymt/podserve/pkg/profile"
+	"github.com/ryanymt/podserve/pkg/render"
 )
 
 var plat = platform.Platform{
